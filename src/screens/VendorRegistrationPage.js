@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import "../styles/VendorRegistrationPage.css";
 import logo5 from "../logo5.png";
 import { Link } from "react-router-dom";
-import logincover from "../cover.jpg";
+import logincover from "../cover3.jpg";
 const VendorRegistrationPage = () => {
   const [companyName, setCompanyName] = useState("");
   const [contactPersonName, setContactPersonName] = useState("");
@@ -12,6 +12,7 @@ const VendorRegistrationPage = () => {
   const [companyAddress, setCompanyAddress] = useState("");
   const [businessLicense, setBusinessLicense] = useState(null);
   const [vatNumber, setVatNumber] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleRegistration = () => {
     console.log("Company Name:", companyName);
@@ -117,6 +118,14 @@ const VendorRegistrationPage = () => {
                   required
                 />
 
+                <label>Password:</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+
                 <label>Business License (Upload):</label>
                 <input
                   type="file"
@@ -136,6 +145,18 @@ const VendorRegistrationPage = () => {
                 >
                   Submit
                 </button>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+
+                  marginTop: "20px",
+                }}
+              >
+                <h4 style={{ marginRight: "8px" }}>Already have an account?</h4>
+                <Link to="/vendor-login" className="text-blue-600">
+                  Login
+                </Link>
               </div>
             </form>
           </div>

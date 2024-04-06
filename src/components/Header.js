@@ -124,7 +124,10 @@ const Header = ({ activeHeading }) => {
                   <Link to="/LoginPage" className="block px-2 py-2 text-black">
                     Login as User
                   </Link>
-                  <Link to="/LoginPage" className="block px-2 py-2 text-black">
+                  <Link
+                    to="/vendor-login"
+                    className="block px-2 py-2 text-black"
+                  >
                     Login as Vendor
                   </Link>
                 </div>

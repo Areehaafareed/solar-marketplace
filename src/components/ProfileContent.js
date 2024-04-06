@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   AiOutlineCamera,
   AiOutlineArrowRight,
@@ -6,13 +6,14 @@ import {
 } from "react-icons/ai";
 import { CgProfile } from "react-icons/cg";
 import styles from "../styles/styles";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { RxCross1 } from "react-icons/rx";
 import { Country, State } from "country-state-city";
 import { MdOutlineTrackChanges, MdTrackChanges } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getAllOrdersOfUser } from "../redux/actions/order";
 
 const ProfileContent = ({ active, data }) => {
   //   const user = useSelector((state) => state.u
@@ -150,75 +151,12 @@ const ProfileContent = ({ active, data }) => {
 };
 
 const AllOrder = () => {
-  const orders = [
-    {
-      _id: "123ab45",
-      orderItems: [
-        {
-          name: "High Solar Panel",
-        },
-      ],
-      totalPrice: 1400,
-      orderStatus: "processing",
-    },
-    {
-      _id: "678cd90",
-      orderItems: [
-        {
-          name: "Solar Battery",
-        },
-        {
-          name: "Solar Charger",
-        },
-      ],
-      totalPrice: 800,
-      orderStatus: "shipped",
-    },
-    {
-      _id: "456ef12",
-      orderItems: [
-        {
-          name: "Solar Inverter",
-        },
-      ],
-      totalPrice: 600,
-      orderStatus: "delivered",
-    },
-    // Additional orders
-    {
-      _id: "789gh34",
-      orderItems: [
-        {
-          name: "Solar Panel Mounting Kit",
-        },
-      ],
-      totalPrice: 200,
-      orderStatus: "processing",
-    },
-    {
-      _id: "901ij56",
-      orderItems: [
-        {
-          name: "Solar Water Heater",
-        },
-      ],
-      totalPrice: 1200,
-      orderStatus: "processing",
-    },
-    {
-      _id: "234kl78",
-      orderItems: [
-        {
-          name: "Solar Lights",
-        },
-        {
-          name: "Solar Fan",
-        },
-      ],
-      totalPrice: 500,
-      orderStatus: "shipped",
-    },
-  ];
+  const { orders } = useSelector((state) => state.order);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getAllOrdersOfUser()); // Call the action without passing userId
+  }, [dispatch]);
 
   return (
     <div className="flex flex-col">

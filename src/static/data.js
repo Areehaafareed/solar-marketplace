@@ -114,12 +114,12 @@ export const solarProducts = [
       "Efficient and compact solar water heater for eco-friendly hot water solutions.",
     image_URL: "/Assets/water.jpg",
     shop: {
-      name: "Walmart",
+      name: "Honey's Air & Solar",
       shop_avatar: {
-        public_id: "solar-water-heater-avatar",
-        url: "/Assets/walmart.png",
+        public_id: "solar-fan-avatar",
+        url: "/Assets/target.png",
       },
-      ratings: 4.7,
+      ratings: 4.4,
     },
     price: 27.99,
     discount_price: 25.99,
@@ -440,35 +440,56 @@ export const footerSupportLinks = [
   },
 ];
 
-// In your static/data.js file or wherever you store your data
-
+// solar packages
 export const solarPackagesData = [
   {
     id: 1,
     name: "Standard Solar Package",
-    description: "Basic solar package for small households.",
-    image_URL: "/path/to/standard_solar_package_image.jpg",
+    description:
+      "Basic solar package for small households. This package includes everything you need to start harnessing solar energy for your home. Enjoy energy savings and environmental benefits with our energy-efficient panels. With easy installation and smart monitoring, managing your energy usage has never been easier.",
+    image_URL: "/Assets/solar4.jpg",
     price: 1999.99,
+    discount_price: 1876.99,
     capacity: "5 kW",
     warranty: "5 years",
     features: ["Energy-efficient", "Easy installation", "Smart monitoring"],
+    shop: {
+      name: "Honey's Air & Solar",
+      shop_avatar: {
+        public_id: "solar-fan-avatar",
+        url: "/Assets/target.png",
+      },
+      ratings: 4.4,
+    },
   },
   {
     id: 2,
     name: "Premium Solar Package",
-    description: "Advanced solar package for larger energy needs.",
-    image_URL: "/path/to/premium_solar_package_image.jpg",
+    description:
+      "Advanced solar package for larger energy needs. Upgrade to our premium solar package and experience superior performance and reliability. Our high-efficiency panels and remote monitoring capabilities ensure optimal energy production and management. With battery backup for uninterrupted power supply, you can stay powered even during outages.",
+    image_URL: "/Assets/premium.png",
     price: 2999.99,
-    capacity: "10 kW",
+    discount_price: 2742.99,
+    capacity: "5.22 kW",
     warranty: "10 years",
     features: ["High efficiency", "Remote monitoring", "Battery backup"],
+    shop: {
+      name: "Kohl's",
+      shop_avatar: {
+        public_id: "solar-garden-lights-avatar",
+        url: "/Assets/kohls.png",
+      },
+      ratings: 4.6,
+    },
   },
   {
     id: 3,
     name: "Eco-Friendly Solar Bundle",
-    description: "Go green with our environmentally friendly solar bundle.",
-    image_URL: "/path/to/eco_friendly_solar_bundle_image.jpg",
+    description:
+      "Go green with our environmentally friendly solar bundle. Reduce your carbon footprint and contribute to a sustainable future with our renewable energy solutions. Our eco-friendly materials ensure minimal environmental impact while providing reliable energy generation. Invest in the future with Smart Solarz Solutions.",
+    image_URL: "/Assets/eco.jpg",
     price: 2499.99,
+    discount_price: 2000.99,
     capacity: "8 kW",
     warranty: "7 years",
     features: [
@@ -476,23 +497,43 @@ export const solarPackagesData = [
       "Sustainable materials",
       "Low carbon footprint",
     ],
+    shop: {
+      name: "Smart Solarz Solutions",
+      shop_avatar: {
+        public_id: "green-power-avatar",
+        url: "/Assets/smart.png",
+      },
+      ratings: 4.2,
+    },
   },
   {
     id: 4,
     name: "Smart Home Solar Solution",
-    description: "Make your home smarter with our integrated solar solution.",
-    image_URL: "/path/to/smart_home_solar_solution_image.jpg",
+    description:
+      "Make your home smarter with our integrated solar solution. Take control of your energy usage with our smart home features. From home automation to energy optimization, our solution offers convenience and efficiency. Experience the power of solar with Daraz.",
+    image_URL: "/Assets/home.jpg",
     price: 3499.99,
+    discount_price: 2566.99,
     capacity: "12 kW",
     warranty: "8 years",
     features: ["Home automation", "Energy optimization", "Voice control"],
+    shop: {
+      name: "Daraz",
+      shop_avatar: {
+        public_id: "solar-gadget-avatar",
+        url: "/Assets/daraz.png",
+      },
+      ratings: 4.5,
+    },
   },
   {
     id: 5,
     name: "Off-Grid Solar Power System",
-    description: "Gain independence with our off-grid solar power system.",
-    image_URL: "/path/to/off_grid_solar_power_system_image.jpg",
+    description:
+      "Gain independence with our off-grid solar power system. Ideal for remote locations or those seeking energy self-sufficiency, our off-grid system provides reliable power wherever you are. With battery storage and long-term durability, Dawson Electrics offers a solution you can trust.",
+    image_URL: "/Assets/offgrid.jpg",
     price: 3999.99,
+    discount_price: 3455.99,
     capacity: "15 kW",
     warranty: "12 years",
     features: [
@@ -500,24 +541,43 @@ export const solarPackagesData = [
       "Battery storage",
       "Remote locations",
     ],
+    shop: {
+      name: "Dawson Electrics",
+      shop_avatar: {
+        public_id: "solar-tech-avatar",
+        url: "/Assets/dawson.jpg",
+      },
+      ratings: 4.5,
+    },
   },
   {
     id: 6,
     name: "Compact Solar Starter Kit",
-    description: "Start your solar journey with our compact starter kit.",
-    image_URL: "/path/to/compact_solar_starter_kit_image.jpg",
+    description:
+      "Start your solar journey with our compact starter kit. Perfect for small spaces or those new to solar, our starter kit provides an affordable entry point. With easy setup and reliable performance, Dawson Electrics offers a solution tailored to your needs.",
+    image_URL: "/Assets/kit.jpg",
     price: 1799.99,
+    discount_price: 1500.89,
     capacity: "3 kW",
     warranty: "5 years",
     features: ["Affordable", "Easy setup", "Ideal for small spaces"],
+    shop: {
+      name: "Dawson Electrics",
+      shop_avatar: {
+        public_id: "solar-tech-avatar",
+        url: "/Assets/dawson.jpg",
+      },
+      ratings: 4.5,
+    },
   },
   {
     id: 7,
     name: "Industrial Solar Power Solution",
     description:
-      "Power your industrial operations with our robust solar solution.",
-    image_URL: "/path/to/industrial_solar_power_solution_image.jpg",
+      "Power your industrial operations with our robust solar solution. Designed for heavy-duty performance, our industrial solar solution offers customizable configurations to meet your specific requirements. With industrial-grade components and reliable performance, Amazon provides a solution you can depend on.",
+    image_URL: "/Assets/power.jpg",
     price: 5999.99,
+    discount_price: 4000.99,
     capacity: "20 kW",
     warranty: "15 years",
     features: [
@@ -525,6 +585,14 @@ export const solarPackagesData = [
       "Customizable configurations",
       "Industrial-grade components",
     ],
+    shop: {
+      name: "Amazon",
+      shop_avatar: {
+        public_id: "sunshine-lighting-avatar",
+        url: "/Assets/ama.png",
+      },
+      ratings: 4.8,
+    },
   },
 ];
 

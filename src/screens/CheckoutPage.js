@@ -12,7 +12,6 @@ const CheckoutPage = () => {
       <br />
       <CheckoutSteps active={1} />
       <Checkout />
-
       <br />
       <br />
       <Footer />

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/SignupPage.css"; // Create a new CSS file for SignupPage styles
 import logo5 from "../logo5.png";
-import logincover from "../cover2.jpg";
+import logincover from "../cover3.jpg";
 
 const SignupPage = () => {
   const [name, setName] = useState("");

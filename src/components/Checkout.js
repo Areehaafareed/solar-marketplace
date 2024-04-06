@@ -54,7 +54,7 @@ const Checkout = () => {
 
       const orderData = {
         cart,
-        // totalPrice,
+        totalPrice,
         subTotalPrice,
         shipping,
         discountPrice,
@@ -77,6 +77,7 @@ const Checkout = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const name = couponCode;
   };
   const discountPercentage = couponCodeData
     ? (subTotalPrice * couponCodeData.value) / 100
