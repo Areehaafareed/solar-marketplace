@@ -1,9 +1,9 @@
-// src/components/VendorRegistrationPage.js
 import React, { useState } from "react";
 import "../styles/VendorRegistrationPage.css";
 import logo5 from "../logo5.png";
 import { Link } from "react-router-dom";
 import logincover from "../cover3.jpg";
+
 const VendorRegistrationPage = () => {
   const [companyName, setCompanyName] = useState("");
   const [contactPersonName, setContactPersonName] = useState("");
@@ -13,6 +13,7 @@ const VendorRegistrationPage = () => {
   const [businessLicense, setBusinessLicense] = useState(null);
   const [vatNumber, setVatNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleRegistration = () => {
     console.log("Company Name:", companyName);
@@ -22,6 +23,8 @@ const VendorRegistrationPage = () => {
     console.log("Company Address:", companyAddress);
     console.log("Business License:", businessLicense);
     console.log("VAT Number:", vatNumber);
+    console.log("Password:", password);
+    console.log("Confirm Password:", confirmPassword);
   };
 
   return (
@@ -85,36 +88,11 @@ const VendorRegistrationPage = () => {
                   required
                 />
 
-                <label>Contact Email:</label>
-                <input
-                  type="email"
-                  value={contactEmail}
-                  onChange={(e) => setContactEmail(e.target.value)}
-                  required
-                />
-
-                <label>VAT Number (if applicable):</label>
-                <input
-                  type="text"
-                  value={vatNumber}
-                  onChange={(e) => setVatNumber(e.target.value)}
-                />
-              </div>
-
-              <div className="form-column right-column">
                 <label>Contact Number:</label>
                 <input
                   type="tel"
                   value={contactNumber}
                   onChange={(e) => setContactNumber(e.target.value)}
-                  required
-                />
-
-                <label>Company Address:</label>
-                <input
-                  type="text"
-                  value={companyAddress}
-                  onChange={(e) => setCompanyAddress(e.target.value)}
                   required
                 />
 
@@ -131,6 +109,39 @@ const VendorRegistrationPage = () => {
                   type="file"
                   onChange={(e) => setBusinessLicense(e.target.files[0])}
                   accept=".pdf, .doc, .docx"
+                />
+              </div>
+
+              <div className="form-column right-column">
+                <label>Company Address:</label>
+                <input
+                  type="text"
+                  value={companyAddress}
+                  onChange={(e) => setCompanyAddress(e.target.value)}
+                  required
+                />
+
+                <label>Contact Person Email:</label>
+                <input
+                  type="email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  required
+                />
+
+                <label>VAT Number (if applicable):</label>
+                <input
+                  type="text"
+                  value={vatNumber}
+                  onChange={(e) => setVatNumber(e.target.value)}
+                />
+
+                <label>Confirm Password:</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
                 />
               </div>
               <div
