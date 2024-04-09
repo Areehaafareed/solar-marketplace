@@ -15,8 +15,12 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+<<<<<<< HEAD
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
+=======
+    "axios": "^1.6.8",
+>>>>>>> 6ac261e101e7220e012a25452812750f52e5d456
     "country-state-city": "^3.2.1",
     "express": "^4.19.2",
     "lottie-react": "^2.4.0",

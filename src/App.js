@@ -26,7 +26,14 @@ import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { useEffect, useState } from "react";
 import { ShopHomePage } from "./ShopRoutes.js";
-import { ShopDashboardPage } from "./routes/ShopRoute.js";
+import {
+  ShopDashboardPage,
+  ShopCreateProduct,
+  ShopAllProducts,
+  ShopAllCoupons,
+  ShopAllOrderDetails,
+  ShopAllOrders,
+} from "./routes/ShopRoute.js";
 import SellerProtectedRoute from "./routes/sellerProtectedRoute.js";
 import { useDispatch, useSelector } from "react-redux";
 import Loader from "./components/Loader.js";
@@ -101,6 +108,47 @@ function App() {
             element={
               <SellerProtectedRoute>
                 <ShopDashboardPage />
+              </SellerProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard-orders"
+            element={
+              <SellerProtectedRoute>
+                <ShopAllOrders />
+              </SellerProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard-orders/:id"
+            element={
+              <SellerProtectedRoute>
+                <ShopAllOrderDetails />
+              </SellerProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard-create-product"
+            element={
+              <SellerProtectedRoute>
+                <ShopCreateProduct />
+              </SellerProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard-products"
+            element={
+              <SellerProtectedRoute>
+                <ShopAllProducts />
+              </SellerProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard-coupons"
+            element={
+              <SellerProtectedRoute>
+                <ShopAllCoupons />
               </SellerProtectedRoute>
             }
           />

@@ -1,2 +1,15 @@
 import ShopDashboardPage from "../screens/Shop/ShopDashboardPage";
-export { ShopDashboardPage };
+import ShopCreateProduct from "../screens/Shop/ShopCreateProduct";
+import ShopAllProducts from "../screens/Shop/ShopAllProducts";
+import ShopAllCoupons from "../screens/Shop/ShopAllCoupons";
+import ShopAllOrders from "../screens/Shop/ShopAllOrders";
+import ShopAllOrderDetails from "../screens/Shop/ShopAllOrderDetails";
+
+export {
+  ShopDashboardPage,
+  ShopCreateProduct,
+  ShopAllProducts,
+  ShopAllCoupons,
+  ShopAllOrders,
+  ShopAllOrderDetails,
+};
