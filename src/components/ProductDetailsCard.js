@@ -1,5 +1,4 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { RxCross1 } from "react-icons/rx";
 import { Link } from "react-router-dom";
 import styles from "../styles/styles";
@@ -20,9 +19,15 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   const [select, setSelect] = useState();
   const { cart } = useSelector((state) => state.cart);
   const { wishlist } = useSelector((state) => state.wishlist);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // New state to track user's login status
   const dispatch = useDispatch();
 
-  const handleMessageSubmit = () => {};
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    setIsLoggedIn(!!isLoggedIn); // Convert to boolean
+  }, []);
+
+  const handleMessageSubmit = () => { };
 
   const decrementCount = () => {
     if (count > 1) {
@@ -35,6 +40,12 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   };
 
   const addToCartHandler = (id) => {
+    if (!isLoggedIn) {
+      // If user is not logged in, show prompt to login
+      toast.error("Please log in to add items to your cart.");
+      return; // Prevent adding to cart if user is not logged in
+    }
+
     const isItemExists = cart && cart.find((i) => i.id === id);
     if (isItemExists) {
       toast.error("Item already in cart!");
@@ -164,25 +175,6 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                       +{" "}
                     </button>
                   </div>
-                  {/* <div>
-                    {click ? (
-                      <AiFillHeart
-                        size={30}
-                        className="cursor-pointer"
-                        onClick={() => setClick(!click)}
-                        color={click ? "red" : "#333"}
-                        title="Remove from wishlist"
-                      />
-                    ) : (
-                      <AiOutlineHeart
-                        size={30}
-                        className="cursor-pointer"
-                        onClick={() => setClick(!click)}
-                        color={click ? "red" : "#333"}
-                        title="Add to wishlist"
-                      />
-                    )}
-                  </div> */}
                 </div>
 
                 <div
@@ -190,7 +182,7 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                   onClick={() => addToCartHandler(data.id)}
                 >
                   <span className="text-[#fff] flex items-center">
-                    Add to cart <AiOutlineShoppingCart className="ml-1" />
+                    Add to Cart <AiOutlineShoppingCart className="ml-1" />
                   </span>
                 </div>
               </div>

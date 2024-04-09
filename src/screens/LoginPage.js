@@ -27,6 +27,8 @@ const LoginPage = () => {
 
       // Check if login was successful
       if (response.ok) {
+        // Set login status in local storage
+        localStorage.setItem('isLoggedIn', true);
         // Redirect to the dashboard or home page after successful login
         console.log('Login successful');
         navigate('/');

@@ -21,7 +21,13 @@ const ProductCard = ({ data }) => {
   const { cart } = useSelector((state) => state.cart);
   const [click, setClick] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // New state to track user's login status
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    setIsLoggedIn(!!isLoggedIn); // Convert to boolean
+  }, []);
 
   const handleMouseEnter = () => {
     setHovered(true);
@@ -50,6 +56,12 @@ const ProductCard = ({ data }) => {
   };
 
   const addToCartHandler = (id) => {
+    if (!isLoggedIn) {
+      // If user is not logged in, show prompt to login
+      toast.error("Please log in to add items to your cart.");
+      return; // Prevent adding to cart if user is not logged in
+    }
+
     const isItemExists = cart && cart.find((i) => i.id === id);
     if (isItemExists) {
       toast.error("Item already in cart!");
@@ -172,7 +184,7 @@ const ProductCard = ({ data }) => {
             <ProductDetailsCard
               setOpen={setOpen}
               data={data}
-              // addToCart={addToCart}
+            // addToCart={addToCart}
             />
           ) : null}
         </div>

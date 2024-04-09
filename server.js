@@ -110,7 +110,7 @@ app.post('/login', async (req, res) => {
 
 // Vendor registration
 app.post('/register-vendor', upload.single('businessLicense'), async (req, res) => {
-    const { companyName, contactPersonName, contactEmail, contactNumber, companyAddress, vatNumber } = req.body;
+    const { companyName, contactPersonName, contactEmail, contactNumber, companyAddress, vatNumber, password } = req.body;
     const businessLicense = req.file ? req.file.path : null;
 
     try {
@@ -124,15 +124,53 @@ app.post('/register-vendor', upload.single('businessLicense'), async (req, res) 
             return res.status(400).json({ error: 'Vendor already exists' });
         }
 
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         // Insert vendor data into the database
-        const insertVendorSql = 'INSERT INTO vendors (companyName, contactPersonName, contactEmail, contactNumber, companyAddress, businessLicense, vatNumber) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        await db.promise().query(insertVendorSql, [companyName, contactPersonName, contactEmail, contactNumber, companyAddress, businessLicense, vatNumber]);
+        const insertVendorSql = 'INSERT INTO vendors (companyName, contactPersonName, contactEmail, contactNumber, companyAddress, businessLicense, vatNumber, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+        await db.promise().query(insertVendorSql, [companyName, contactPersonName, contactEmail, contactNumber, companyAddress, businessLicense, vatNumber, hashedPassword]);
 
         console.log('Vendor registered successfully');
         res.status(200).json({ message: 'Vendor registered successfully' });
     } catch (error) {
         console.error('Error registering vendor:', error);
         res.status(500).json({ error: 'Error registering vendor' });
+    }
+});
+
+// Vendor login
+app.post('/vendor-login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // Check if vendor exists in the database
+        const getVendorSql = 'SELECT * FROM vendors WHERE contactEmail = ?';
+        const [rows] = await db.promise().query(getVendorSql, [email]);
+
+        if (rows.length === 0) {
+            console.error('Vendor not found');
+            res.status(404).json({ error: 'Vendor not found' });
+            return;
+        }
+
+        // Retrieve the stored hashed password
+        const storedHashedPassword = rows[0].Password;
+
+        // Compare the provided password with the stored hashed password
+        const passwordMatch = await bcrypt.compare(password, storedHashedPassword);
+
+        if (!passwordMatch) {
+            console.error('Incorrect password');
+            res.status(401).json({ error: 'Incorrect email or password' });
+            return;
+        }
+
+        console.log('Vendor login successful');
+        res.status(200).json({ message: 'Vendor login successful' });
+    } catch (error) {
+        console.error('Error during vendor login:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 

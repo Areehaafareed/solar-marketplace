@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "../styles/styles";
 import {
@@ -20,25 +20,30 @@ const ProductDetails = ({ data }) => {
   const [select, setSelect] = useState(0);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // New state to track user's login status
 
-  // useEffect(() => {
-  //   if (wishlist && wishlist.find((i) => i.id === data.id)) {
-  //     setClick(true);
-  //   } else {
-  //     setClick(false);
-  //   }
-  // }, [wishlist]);
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    setIsLoggedIn(!!isLoggedIn); // Convert to boolean
+  }, []);
 
   const removeFromWishlistHandler = (data) => {
     setClick(!click);
     dispatch(removeFromWishlist(data));
   };
+
   const addToWishlistHandler = (data) => {
     setClick(!click);
     dispatch(addToWishlist(data));
   };
 
   const addToCartHandler = (id) => {
+    if (!isLoggedIn) {
+      // If user is not logged in, show prompt to login
+      toast.error("Please log in to add items to your cart.");
+      return; // Prevent adding to cart if user is not logged in
+    }
+
     const isItemExists = cart && cart.find((i) => i.id === id);
     if (isItemExists) {
       toast.error("Item already in cart!");
@@ -52,6 +57,7 @@ const ProductDetails = ({ data }) => {
       }
     }
   };
+
   const incrementCount = () => {
     setCount(count + 1);
   };

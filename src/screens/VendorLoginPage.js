@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import "../styles/LoginPage.css";
 import { Link, useNavigate } from "react-router-dom";
+import "../styles/LoginPage.css";
 import logo5 from "../logo5.png";
 import logincover from "../cover.jpg";
 
@@ -9,7 +9,8 @@ const VendorLoginPage = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = () => {
+  const handleLogin = (e) => {
+    e.preventDefault(); // Prevent the default form submission behavior
     // Perform your authentication logic here
     console.log("Email:", email);
     console.log("Password:", password);
@@ -47,15 +48,9 @@ const VendorLoginPage = () => {
             Login to your Shop
           </h2>
         </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+        <div className="flex justify-center">
           <div className="login-container">
-            <form>
+            <form onSubmit={handleLogin}>
               <label>Email:</label>
               <input
                 type="email"
@@ -72,25 +67,13 @@ const VendorLoginPage = () => {
                 required
               />
 
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginTop: "20px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    // alignItems: "center",
-                    marginRight: "100px",
-                  }}
-                >
+              <div className="flex justify-between mt-4">
+                <div className="flex items-center">
                   <input
                     type="checkbox"
                     name="remember-me"
                     id="remember-me"
-                    className="h-3 w-3 mt-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <label
                     htmlFor="remember-me"
@@ -100,28 +83,22 @@ const VendorLoginPage = () => {
                   </label>
                 </div>
                 <div className="text-sm">
-                  <a
-                    href=".forgot-password"
+                  <Link
+                    to="/forgot-password"
                     className="font-medium text-red-600 hover:text-red-500 underline"
                   >
                     Forgot your password?
-                  </a>
+                  </Link>
                 </div>
               </div>
 
-              <button
-                type="submit"
-                className="custom-button"
-                onClick={handleLogin}
-              >
+              <button type="submit" className="custom-button mt-4">
                 Login
               </button>
 
-              <div className="flex">
-                <h4 style={{ marginRight: "8px", marginTop: "20px" }}>
-                  Don't have any account?
-                </h4>
-                <Link to="/vendor" className="text-blue-600 mt-5">
+              <div className="flex mt-4">
+                <h4 className="mr-2">Don't have an account?</h4>
+                <Link to="/vendor" className="text-blue-600">
                   Sign Up
                 </Link>
               </div>
