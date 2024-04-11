@@ -68,6 +68,14 @@ const Header = ({ activeHeading }) => {
     }
   };
 
+  const LoginAndRegister = ({ isLoggedIn }) => {
+    const [loginDropDown, setLoginDropDown] = useState(false);
+  }
+
+  const handleLoginClick = () => {
+    setLoginDropDown(!loginDropDown);
+  };
+
   return (
     <>
       <div
@@ -334,16 +342,18 @@ const Header = ({ activeHeading }) => {
               </div>
 
               <Navbar active={activeHeading} />
-              <div
-                className={`${styles.button} ml-4 !rounded-[4px]`}
-                style={{ width: "170px", marginRight: "20px" }}
-              >
-                <Link to="/vendor">
-                  <h1 className="text-[#fff] flex items-center">
-                    Become a Vendor <IoIosArrowForward className="ml-1" />
-                  </h1>
-                </Link>
-              </div>
+              {isLoggedIn && (
+                <div
+                  className={`${styles.button} ml-4 !rounded-[4px]`}
+                  style={{ width: "170px", marginRight: "20px" }}
+                >
+                  <Link to="/vendor">
+                    <h1 className="text-[#fff] flex items-center">
+                      Become a Vendor <IoIosArrowForward className="ml-1" />
+                    </h1>
+                  </Link>
+                </div>
+              )}
               <br />
               <br />
               <br />
