@@ -37,41 +37,51 @@ import {
 import SellerProtectedRoute from "./routes/sellerProtectedRoute.js";
 import { useDispatch, useSelector } from "react-redux";
 import Loader from "./components/Loader.js";
-function App() {
-  const stripePromise = loadStripe("YOUR_STRIPE_PUBLIC_KEY");
+
+const App = () => {
+  const stripePromise = loadStripe('YOUR_STRIPE_PUBLIC_KEY');
   const dispatch = useDispatch();
 
   const { isLoading } = useSelector((state) => state.seller);
 
   useEffect(() => {
     // Dispatch "LoadSellerRequest" action when component mounts
-    dispatch({ type: "LoadSellerRequest" });
+    dispatch({ type: 'LoadSellerRequest' });
 
     // Simulate the user being recognized as a seller
     setTimeout(() => {
       dispatch({
-        type: "LoadSellerSuccess",
+        type: 'LoadSellerSuccess',
         payload: {
           id: 1,
-          name: "Electronics Hub",
-          email: "electronicshub@gmail.com",
-          description:
-            "E-HUB is a comprehensive online platform dedicated to the solar energy sector. It serves as a hub for all things related to solar energy, catering to various stakeholders including consumers, solar industry professionals, and enthusiasts",
-          address: "1234 Solar Street,Renewable City,Sunshine State, Solarland",
-          phoneNumber: "+1 (555) 123-4567",
-          createdAt: "2023-03-15",
+          name: 'Electronics Hub',
+          email: 'electronicshub@gmail.com',
+          description: 'E-HUB is a comprehensive online platform dedicated to the solar energy sector. It serves as a hub for all things related to solar energy, catering to various stakeholders including consumers, solar industry professionals, and enthusiasts',
+          address: '1234 Solar Street, Renewable City, Sunshine State, Solarland',
+          phoneNumber: '+1 (555) 123-4567',
+          createdAt: '2023-03-15',
         },
       });
     }, 2000); // Simulating a delay of 2 seconds
 
+    // Add event listener to clear local storage when the browser is closed
+    window.addEventListener('beforeunload', clearLocalStorage);
+
     return () => {
-      // Cancel any pending dispatch actions here if needed
+      // Remove event listener when the component unmounts
+      window.removeEventListener('beforeunload', clearLocalStorage);
     };
   }, [dispatch]);
+
+  // Function to clear local storage
+  const clearLocalStorage = () => {
+    localStorage.removeItem('isLoggedIn');
+  };
 
   if (isLoading) {
     return <Loader />;
   }
+
   return (
     <BrowserRouter>
       <Elements stripe={stripePromise}>
