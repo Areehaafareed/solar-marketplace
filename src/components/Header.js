@@ -101,83 +101,82 @@ const Header = ({ activeHeading }) => {
               />
             </Link>
           </div>
+          
           {/* search box */}
-          <div className="w-[50%] relative">
-            <input
-              type="text"
-              placeholder="Search Product..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="h-[40px] w-full px-2 border-[#051d40] border-[2px] rounded-md"
-            />
-            <AiOutlineSearch
-              size={30}
-              className="absolute right-6 top-1.5 cursor-pointer"
-            />
+          {!isLoggedIn ? (
+            <div className="w-[50%] relative">
+              <input
+                type="text"
+                placeholder="Search Product..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="h-[40px] w-full px-2 border-[#051d40] border-[2px] rounded-md"
+              />
+              <AiOutlineSearch
+                size={30}
+                className="absolute right-6 top-1.5 cursor-pointer"
+              />
 
-            {searchData && searchData.length !== 0 ? (
-              <div className="absolute min-h-[30vh] bg-slate-50 shadow-sm-2 z-[9] p-4">
-                {searchData &&
-                  searchData.map((i, index) => {
-                    return (
-                      <Link to={`/product/${i.id}`}>
-                        <div className="w-full flex items-start-py-3">
-                          <h1>{i.name}</h1>
-                        </div>
-                      </Link>
-                    );
-                  })}
-              </div>
-            ) : null}
-          </div>
-
-          <div className="flex w-[170px] bg-black h-[50px]   items-center justify-center rounded-xl cursor-pointer">
-            <div
-              className="relative cursor-pointer mr-[15px] "
-              onClick={() => setLoginDropDown(!loginDropDown)}
-            >
-              <div className=" text-white py-4 px-4 cursor-pointer ">
-                Login{" "}
-              </div>
-
-              {loginDropDown && (
-                <div
-                  className="absolute top-full left-0 bg-white w-36 py-2 rounded-md shadow-md z-20"
-                  onMouseLeave={() => setLoginDropDown(false)}
-                >
-                  <Link to="/LoginPage" className="block px-2 py-2 text-black">
-                    Login as User
-                  </Link>
-                  <Link
-                    to="/vendor-login"
-                    className="block px-2 py-2 text-black"
-                  >
-                    Login as Vendor
-                  </Link>
+              {searchData && searchData.length !== 0 ? (
+                <div className="absolute min-h-[30vh] bg-slate-50 shadow-sm-2 z-[9] p-4">
+                  {searchData &&
+                    searchData.map((i, index) => {
+                      return (
+                        <Link to={`/product/${i.id}`}>
+                          <div className="w-full flex items-start-py-3">
+                            <h1>{i.name}</h1>
+                          </div>
+                        </Link>
+                      );
+                    })}
                 </div>
-              )}
+              ) : null}
             </div>
+          ) : (
+            <div className="w-full flex justify-center items-center">
+              <input
+                type="text"
+                placeholder="Search Product..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="h-[40px] w-[50%] px-2 border-[#051d40] border-[2px] rounded-md"
+              />
+              <AiOutlineSearch
+                size={30}
+                className="ml-2 cursor-pointer"
+              />
+            </div>
+          )}
 
-            <div className="  relative cursor-pointer ">
-              <Link to="/Signup">
-                <div className=" text-white py-4 px-4  cursor-pointer">
-                  Register
-                </div>
+          {!isLoggedIn && (
+            <div className="flex w-[170px] bg-black h-[50px] items-center justify-center rounded-xl cursor-pointer">
+              <div className="relative cursor-pointer mr-[15px]" onClick={() => setLoginDropDown(!loginDropDown)}>
+                <div className="text-white py-4 px-4 cursor-pointer">Login</div>
+                {loginDropDown && (
+                  <div className="absolute top-full left-0 bg-white w-36 py-2 rounded-md shadow-md z-20" onMouseLeave={() => setLoginDropDown(false)}>
+                    <Link to="/LoginPage" className="block px-2 py-2 text-black">Login as User</Link>
+                    <Link to="/vendor-login" className="block px-2 py-2 text-black">Login as Vendor</Link>
+                  </div>
+                )}
+              </div>
+              <div className="relative cursor-pointer ">
+                <Link to="/Signup">
+                  <div className="text-white py-4 px-4 cursor-pointer">Register</div>
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Become a vendor button */}
+          {!isLoggedIn && (
+            <div className={`${styles.button} `} style={{ width: "170px", marginRight: "20px" }}>
+              <Link to="/vendor">
+                <h1 className="text-[#fff] flex items-center">Become a Vendor <IoIosArrowForward className="ml-1" /></h1>
               </Link>
             </div>
-          </div>
-
-          <div
-            className={`${styles.button} `}
-            style={{ width: "170px", marginRight: "20px" }}
-          >
-            <Link to="/vendor">
-              <h1 className="text-[#fff] flex items-center">
-                Become a Vendor <IoIosArrowForward className="ml-1" />
-              </h1>
-            </Link>
-          </div>
+          )}
         </div>
+      </div>
 
         <div
           className={`${active === true ? "shadow-sm fixed top-0 left-0 z-10" : null
@@ -254,7 +253,6 @@ const Header = ({ activeHeading }) => {
             </div>
           </div>
         </div>
-      </div>
 
       {/* mobile header */}
       <div
@@ -342,18 +340,16 @@ const Header = ({ activeHeading }) => {
               </div>
 
               <Navbar active={activeHeading} />
-              {isLoggedIn && (
-                <div
-                  className={`${styles.button} ml-4 !rounded-[4px]`}
-                  style={{ width: "170px", marginRight: "20px" }}
-                >
+
+              {/* Become a vendor button */}
+              {!isLoggedIn && (
+                <div className={`${styles.button} ml-4 !rounded-[4px]`} style={{ width: "170px", marginRight: "20px" }}>
                   <Link to="/vendor">
-                    <h1 className="text-[#fff] flex items-center">
-                      Become a Vendor <IoIosArrowForward className="ml-1" />
-                    </h1>
+                    <h1 className="text-[#fff] flex items-center">Become a Vendor <IoIosArrowForward className="ml-1" /></h1>
                   </Link>
                 </div>
               )}
+
               <br />
               <br />
               <br />
