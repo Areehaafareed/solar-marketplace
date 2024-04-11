@@ -5,7 +5,7 @@ import styles from "../styles/styles";
 import { HiOutlineMinus, HiPlus } from "react-icons/hi";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { addTocart, removeFromCart } from "../redux/actions/cart";
+import { addTocart, removeFromCart, emptyCart } from "../redux/actions/cart"; // Import emptyCart action
 import { toast } from "react-toastify";
 
 const Cart = ({ setOpenCart }) => {
@@ -23,6 +23,11 @@ const Cart = ({ setOpenCart }) => {
 
   const quantityChangeHandler = (data) => {
     dispatch(addTocart(data));
+  };
+
+  const emptyCartHandler = () => {
+    dispatch(emptyCart()); // Dispatch the emptyCart action
+    toast.success("Cart has been emptied!");
   };
 
   return (
@@ -88,6 +93,18 @@ const Cart = ({ setOpenCart }) => {
                 </div>
               </Link>
             </div>
+
+            {/* Empty Cart button */}
+            <div className="px-5 mb-3">
+              <button
+                className={`h-[45px] flex items-center justify-center w-[100%] bg-[#e44343] rounded-[5px]`}
+                onClick={emptyCartHandler}
+              >
+                <h1 className="text-[#fff] text-[18px] font-[600]">
+                  Empty Cart
+                </h1>
+              </button>
+            </div>
           </>
         )}
       </div>
@@ -134,13 +151,6 @@ const CartSingle = ({ data, quantityChangeHandler, removeFromCartHandler }) => {
           </div>
         </div>
 
-        {/* <Link to={`/product/${product_name}`}>
-          <img
-            src={data.image_URL}
-            className="w-[130px] h-min ml-2 mr-2 rounded-[5px]"
-            alt=""
-          />
-        </Link> */}
         <img
           src={data.image_URL}
           className="w-[130px] h-min ml-2 mr-2 rounded-[5px]"
@@ -164,4 +174,5 @@ const CartSingle = ({ data, quantityChangeHandler, removeFromCartHandler }) => {
     </div>
   );
 };
+
 export default Cart;
