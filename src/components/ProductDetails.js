@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addTocart } from "../redux/actions/cart";
 import { addToWishlist, removeFromWishlist } from "../redux/actions/wishlist";
 import { toast } from "react-toastify";
+import { backendURL } from "../config";
 
 const ProductDetails = ({ data }) => {
   const { cart } = useSelector((state) => state.cart);
@@ -37,7 +38,7 @@ const ProductDetails = ({ data }) => {
     dispatch(addToWishlist(data));
   };
 
-  const addToCartHandler = (id) => {
+  const addToCartHandler = async (id) => {
     if (!isLoggedIn) {
       // If user is not logged in, show prompt to login
       toast.error("Please log in to add items to your cart.");
@@ -52,8 +53,36 @@ const ProductDetails = ({ data }) => {
         toast.error("Product stock limited!");
       } else {
         const cartData = { ...data, qty: count };
-        dispatch(addTocart(cartData));
-        toast.success("Item added to cart successfully!");
+
+        try {
+          // Construct the URL for adding to cart
+          const addToCartURL = `${backendURL}/api/add-to-cart`;
+
+          // Send cart item data to the backend
+          const response = await fetch(addToCartURL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              // Include any necessary authentication tokens or headers here
+            },
+            body: JSON.stringify(cartData),
+          });
+
+          // Check if request was successful
+          if (response.ok) {
+            // Dispatch action to add item to Redux store
+            dispatch(addTocart(cartData));
+            toast.success("Item added to cart successfully!");
+          } else {
+            // Handle error response from backend
+            const errorMessage = await response.text();
+            toast.error(`Error: ${errorMessage}`);
+          }
+        } catch (error) {
+          // Handle network errors or exceptions
+          console.error('Error adding to cart:', error);
+          toast.error('Error adding to cart. Please try again later.');
+        }
       }
     }
   };

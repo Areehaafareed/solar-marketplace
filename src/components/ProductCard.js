@@ -1,3 +1,4 @@
+// Import useState and useEffect
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import styles from "../styles/styles";
@@ -14,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addToWishlist, removeFromWishlist } from "../redux/actions/wishlist";
 import { addTocart } from "../redux/actions/cart";
 import { toast } from "react-toastify";
+import { backendURL } from "../config";
 
 const ProductCard = ({ data }) => {
   const [hovered, setHovered] = useState(false);
@@ -55,7 +57,7 @@ const ProductCard = ({ data }) => {
     dispatch(addToWishlist(data));
   };
 
-  const addToCartHandler = (id) => {
+  const addToCartHandler = async (id) => {
     if (!isLoggedIn) {
       // If user is not logged in, show prompt to login
       toast.error("Please log in to add items to your cart.");
@@ -69,9 +71,37 @@ const ProductCard = ({ data }) => {
       if (data.stock < 1) {
         toast.error("Product stock limited!");
       } else {
-        const cartData = { ...data, qty: 1 };
-        dispatch(addTocart(cartData));
-        toast.success("Item added to cart successfully!");
+        const cartData = { ...data, qty: 1 }; // Set qty to 1 for now, you may change this according to your requirement
+
+        try {
+          // Construct the URL for adding to cart
+          const addToCartURL = `${backendURL}/api/add-to-cart`;
+
+          // Send cart item data to the backend
+          const response = await fetch(addToCartURL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              // Include any necessary authentication tokens or headers here
+            },
+            body: JSON.stringify(cartData),
+          });
+
+          // Check if request was successful
+          if (response.ok) {
+            // Dispatch action to add item to Redux store
+            dispatch(addTocart(cartData));
+            toast.success("Item added to cart successfully!");
+          } else {
+            // Handle error response from backend
+            const errorMessage = await response.text();
+            toast.error(`Error: ${errorMessage}`);
+          }
+        } catch (error) {
+          // Handle network errors or exceptions
+          console.error('Error adding to cart:', error);
+          toast.error('Error adding to cart. Please try again later.');
+        }
       }
     }
   };
@@ -178,7 +208,7 @@ const ProductCard = ({ data }) => {
             className="cursor-pointer absolute right-2 top-24"
             onClick={() => addToCartHandler(data.id)}
             color="#444"
-            title="Add to cart"
+            title="Add to Cart"
           />
           {open ? (
             <ProductDetailsCard

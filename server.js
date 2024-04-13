@@ -4,13 +4,15 @@ const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
 const path = require('path');
+const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(cors());
 
 // Set up multer for file uploads
 const storage = multer.diskStorage({
@@ -73,7 +75,7 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-// User login
+// Customer login
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -92,7 +94,7 @@ app.post('/login', async (req, res) => {
         const storedHashedPassword = rows[0].Password;
 
         // Compare the provided password with the stored hashed password
-        const passwordMatch = bcrypt.compare(password, storedHashedPassword);
+        const passwordMatch = await bcrypt.compare(password, storedHashedPassword);
 
         if (!passwordMatch) {
             console.error('Incorrect password');
@@ -172,6 +174,38 @@ app.post('/vendor-login', async (req, res) => {
         console.error('Error during vendor login:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
+});
+
+// Add item to cart
+app.post('/api/add-to-cart', (req, res) => {
+    const { email, item } = req.body;
+
+    const insertCartItemSql = 'INSERT INTO cart_items (email, item) VALUES (?, ?)';
+    db.query(insertCartItemSql, [email, JSON.stringify(item)], (err, result) => {
+        if (err) {
+            console.error('Error adding item to cart:', err);
+            res.status(500).json({ error: 'Error adding item to cart' });
+            return;
+        }
+        console.log('Item added to cart successfully');
+        res.status(200).json({ message: 'Item added to cart successfully' });
+    });
+});
+
+// Add item to wishlist
+app.post('/api/add-to-wishlist', (req, res) => {
+    const { email, item } = req.body;
+
+    const insertWishlistItemSql = 'INSERT INTO wishlist_items (email, item) VALUES (?, ?)';
+    db.query(insertWishlistItemSql, [email, JSON.stringify(item)], (err, result) => {
+        if (err) {
+            console.error('Error adding item to wishlist:', err);
+            res.status(500).json({ error: 'Error adding item to wishlist' });
+            return;
+        }
+        console.log('Item added to wishlist successfully');
+        res.status(200).json({ message: 'Item added to wishlist successfully' });
+    });
 });
 
 // Start the server

@@ -1,5 +1,5 @@
 import { createReducer } from "@reduxjs/toolkit";
-import { EMPTY_CART } from "../actions/cart"; // Import EMPTY_CART action type
+import { ADD_TO_CART, REMOVE_FROM_CART, EMPTY_CART } from "../actions/cart"; // Import action type constants
 
 const initialState = {
   cart: localStorage.getItem("cartItems")
@@ -8,7 +8,7 @@ const initialState = {
 };
 
 const cartReducer = createReducer(initialState, (builder) => {
-  builder.addCase("addToCart", (state, action) => {
+  builder.addCase(ADD_TO_CART, (state, action) => {
     const item = action.payload;
     const existingItemIndex = state.cart.findIndex((i) => i.id === item.id);
     const alreadyExists = existingItemIndex !== -1;
@@ -20,11 +20,8 @@ const cartReducer = createReducer(initialState, (builder) => {
     }
   });
 
-  builder.addCase("removeFromCart", (state, action) => {
-    return {
-      ...state,
-      cart: state.cart.filter((i) => i.id !== action.payload),
-    };
+  builder.addCase(REMOVE_FROM_CART, (state, action) => {
+    state.cart = state.cart.filter((i) => i.id !== action.payload);
   });
 
   // case for emptying the cart

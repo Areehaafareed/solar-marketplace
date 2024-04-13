@@ -4,6 +4,7 @@ import "../styles/VendorRegistrationPage.css";
 import logo5 from "../logo5.png";
 import { Link } from "react-router-dom";
 import logincover from "../cover3.jpg";
+import { backendURL } from "../config";
 
 const VendorRegistrationPage = () => {
   const [companyName, setCompanyName] = useState("");
@@ -35,7 +36,10 @@ const VendorRegistrationPage = () => {
       formData.append("businessLicense", businessLicense);
       formData.append("password", password);
 
-      const response = await fetch("/register-vendor", {
+      // Construct the complete backend URL dynamically
+      const vendorRegistrationURL = `${backendURL}/register-vendor`;
+
+      const response = await fetch(vendorRegistrationURL, {
         method: "POST",
         body: formData,
       });
