@@ -44,6 +44,11 @@ db.connect((err) => {
 
 // Routes
 
+// Route to confirm server status
+app.get('/status', (req, res) => {
+    res.status(200).json({ message: 'Server is up and running' });
+});
+
 // User signup
 app.post('/signup', async (req, res) => {
     const { email, fullName, password } = req.body;
