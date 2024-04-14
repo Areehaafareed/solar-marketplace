@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "../styles/SignupPage.css"; // Create a new CSS file for SignupPage styles
 import logo5 from "../logo5.png";
 import logincover from "../cover2.jpg";
-import bcrypt from 'bcryptjs'; // Import bcrypt.js library
+import { backendURL } from "../config";
 
 const SignupPage = () => {
   const [name, setName] = useState("");
@@ -12,6 +12,7 @@ const SignupPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate(); // Get navigate object
 
+  const signUpURL = `${backendURL}/Signup`
   const handleSignup = async (e) => {
     e.preventDefault(); // Prevent default form submission
 
@@ -28,11 +29,8 @@ const SignupPage = () => {
     }
 
     try {
-      // Hash the password
-      const hashedPassword = await bcrypt.hash(password, 10); // Salt rounds: 10
-
       // Send signup data to the server with hashed password
-      const response = await fetch('/Signup', {
+      const response = await fetch(signUpURL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,7 +38,7 @@ const SignupPage = () => {
         body: JSON.stringify({
           fullName: name,
           email,
-          password: hashedPassword, // Send hashed password to the server
+          password, 
         }),
       });
 
