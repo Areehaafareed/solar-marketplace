@@ -50,7 +50,7 @@ app.get('/status', (req, res) => {
 });
 
 // User signup
-app.post('/signup', async (req, res) => {
+app.post('/Signup', async (req, res) => {
     const { email, fullName, password } = req.body;
 
     try {
@@ -83,6 +83,7 @@ app.post('/signup', async (req, res) => {
 // Customer login
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
+    console.log(req.body); // Log the request body to verify received data
 
     try {
         // Check if user exists in the database
