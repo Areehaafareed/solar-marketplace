@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "../../styles/styles";
 import {
@@ -14,6 +14,7 @@ import {
   removeFromWishlist,
 } from "../../redux/actions/wishlist";
 import { toast } from "react-toastify";
+import { backendURL } from "../../config";
 import Ratings from "./Ratings";
 
 const ProductDetails = ({ data }) => {
@@ -24,25 +25,30 @@ const ProductDetails = ({ data }) => {
   const [select, setSelect] = useState(0);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // New state to track user's login status
 
-  // useEffect(() => {
-  //   if (wishlist && wishlist.find((i) => i.id === data.id)) {
-  //     setClick(true);
-  //   } else {
-  //     setClick(false);
-  //   }
-  // }, [wishlist]);
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    setIsLoggedIn(!!isLoggedIn); // Convert to boolean
+  }, []);
 
   const removeFromWishlistHandler = (data) => {
     setClick(!click);
     dispatch(removeFromWishlist(data));
   };
+
   const addToWishlistHandler = (data) => {
     setClick(!click);
     dispatch(addToWishlist(data));
   };
 
-  const addToCartHandler = (id) => {
+  const addToCartHandler = async (id) => {
+    if (!isLoggedIn) {
+      // If user is not logged in, show prompt to login
+      toast.error("Please log in to add items to your cart.");
+      return; // Prevent adding to cart if user is not logged in
+    }
+
     const isItemExists = cart && cart.find((i) => i.id === id);
     if (isItemExists) {
       toast.error("Item already in cart!");
@@ -51,11 +57,40 @@ const ProductDetails = ({ data }) => {
         toast.error("Product stock limited!");
       } else {
         const cartData = { ...data, qty: count };
-        dispatch(addTocart(cartData));
-        toast.success("Item added to cart successfully!");
+
+        try {
+          // Construct the URL for adding to cart
+          const addToCartURL = `${backendURL}/api/add-to-cart`;
+
+          // Send cart item data to the backend
+          const response = await fetch(addToCartURL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              // Include any necessary authentication tokens or headers here
+            },
+            body: JSON.stringify(cartData),
+          });
+
+          // Check if request was successful
+          if (response.ok) {
+            // Dispatch action to add item to Redux store
+            dispatch(addTocart(cartData));
+            toast.success("Item added to cart successfully!");
+          } else {
+            // Handle error response from backend
+            const errorMessage = await response.text();
+            toast.error(`Error: ${errorMessage}`);
+          }
+        } catch (error) {
+          // Handle network errors or exceptions
+          console.error("Error adding to cart:", error);
+          toast.error("Error adding to cart. Please try again later.");
+        }
       }
     }
   };
+
   const incrementCount = () => {
     setCount(count + 1);
   };

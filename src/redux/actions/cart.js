@@ -1,7 +1,12 @@
+// Action Types
+export const ADD_TO_CART = 'ADD_TO_CART';
+export const REMOVE_FROM_CART = 'REMOVE_FROM_CART';
+export const EMPTY_CART = 'EMPTY_CART';
+
 // add to cart
 export const addTocart = (data) => async (dispatch, getState) => {
   dispatch({
-    type: "addToCart", // Use the correct action type
+    type: ADD_TO_CART, // Use the defined action type
     payload: data,
   });
 
@@ -12,9 +17,18 @@ export const addTocart = (data) => async (dispatch, getState) => {
 // remove from cart
 export const removeFromCart = (data) => async (dispatch, getState) => {
   dispatch({
-    type: "removeFromCart", // Use the correct action type
+    type: REMOVE_FROM_CART, // Use the defined action type
     payload: data.id,
   });
   localStorage.setItem("cartItems", JSON.stringify(getState().cart.cart));
   return data;
+};
+
+// empty cart
+export const emptyCart = () => async (dispatch, getState) => {
+  dispatch({
+    type: EMPTY_CART,
+  });
+
+  localStorage.removeItem("cartItems");
 };

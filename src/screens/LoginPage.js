@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "../styles/LoginPage.css";
 import logo5 from "../logo5.png";
 import logincover from "../cover.jpg";
+import { backendURL } from "../config";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -13,8 +14,12 @@ const LoginPage = () => {
     e.preventDefault(); // Prevent default form submission
 
     try {
+      // Construct the complete backend URL dynamically
+      const loginURL = `${backendURL}/login`;
+      console.log(loginURL);
+      
       // Send login credentials to the server
-      const response = await fetch('/login', {
+      const response = await fetch(loginURL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,6 +32,8 @@ const LoginPage = () => {
 
       // Check if login was successful
       if (response.ok) {
+        // Set login status in local storage
+        localStorage.setItem('isLoggedIn', true);
         // Redirect to the dashboard or home page after successful login
         console.log('Login successful');
         navigate('/');

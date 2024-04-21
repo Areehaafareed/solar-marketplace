@@ -5,7 +5,7 @@ import styles from "../styles/styles";
 import { HiOutlineMinus, HiPlus } from "react-icons/hi";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { addTocart, removeFromCart } from "../redux/actions/cart";
+import { addTocart, removeFromCart, emptyCart } from "../redux/actions/cart"; // Import emptyCart action
 import { toast } from "react-toastify";
 
 const Cart = ({ setOpenCart }) => {
@@ -19,10 +19,15 @@ const Cart = ({ setOpenCart }) => {
   const totalPrice = cart.reduce(
     (acc, item) => acc + item.qty * item.discount_price,
     0
-  );
+  ).toFixed(2);
 
   const quantityChangeHandler = (data) => {
     dispatch(addTocart(data));
+  };
+
+  const emptyCartHandler = () => {
+    dispatch(emptyCart()); // Dispatch the emptyCart action
+    toast.success("Cart has been emptied!");
   };
 
   return (
@@ -37,7 +42,7 @@ const Cart = ({ setOpenCart }) => {
                 onClick={() => setOpenCart(false)}
               />
             </div>
-            <h5>Cart Items is empty!</h5>
+            <h5>Cart is empty!</h5>
           </div>
         ) : (
           <>
@@ -88,6 +93,18 @@ const Cart = ({ setOpenCart }) => {
                 </div>
               </Link>
             </div>
+
+            {/* Empty Cart button */}
+            <div className="px-5 mb-3">
+              <button
+                className={`h-[45px] flex items-center justify-center w-[100%] bg-[#e44343] rounded-[5px]`}
+                onClick={emptyCartHandler}
+              >
+                <h1 className="text-[#fff] text-[18px] font-[600]">
+                  Empty Cart
+                </h1>
+              </button>
+            </div>
           </>
         )}
       </div>
@@ -97,22 +114,27 @@ const Cart = ({ setOpenCart }) => {
 
 const CartSingle = ({ data, quantityChangeHandler, removeFromCartHandler }) => {
   const [value, setValue] = useState(data.qty);
-  const totalPrice = data.discount_price * value;
+  const totalPrice = (data.discount_price * value).toFixed(2);
 
-  const increment = (data) => {
-    if (data.stock < value) {
+  const increment = () => {
+    if (data.stock < value + 1) {
       toast.error("Product stock limited!");
     } else {
-      setValue(value + 1);
-      const updateCartData = { ...data, qty: value + 1 };
+      const newValue = value + 1;
+      const updateCartData = { ...data, qty: newValue };
       quantityChangeHandler(updateCartData);
+      setValue(newValue);
     }
   };
 
-  const decrement = (data) => {
-    setValue(value === 1 ? 1 : value - 1);
-    const updateCartData = { ...data, qty: value === 1 ? 1 : value - 1 };
+  const decrement = () => {
+    if (value === 1) {
+      return;
+    }
+    const newValue = value - 1;
+    const updateCartData = { ...data, qty: newValue };
     quantityChangeHandler(updateCartData);
+    setValue(newValue);
   };
 
   return (
@@ -125,22 +147,15 @@ const CartSingle = ({ data, quantityChangeHandler, removeFromCartHandler }) => {
           >
             <HiPlus size={18} color="#fff" />
           </div>
-          <span className="pl-[10px]">{data.qty}</span>
+          <span className="pl-[10px]">{value}</span>
           <div
             className="bg-[#a7abb14f] rounded-full w-[25px] h-[25px] flex items-center justify-center cursor-pointer"
-            onClick={() => decrement(data)}
+            onClick={() => decrement(data.qty)}
           >
             <HiOutlineMinus size={16} color="#7d879c" />
           </div>
         </div>
 
-        {/* <Link to={`/product/${product_name}`}>
-          <img
-            src={data.image_URL}
-            className="w-[130px] h-min ml-2 mr-2 rounded-[5px]"
-            alt=""
-          />
-        </Link> */}
         <img
           src={data.image_URL}
           className="w-[130px] h-min ml-2 mr-2 rounded-[5px]"
@@ -164,4 +179,5 @@ const CartSingle = ({ data, quantityChangeHandler, removeFromCartHandler }) => {
     </div>
   );
 };
+
 export default Cart;

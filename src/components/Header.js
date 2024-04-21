@@ -1,9 +1,8 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import logo5 from "../logo5.png";
 import styles from "../styles/styles";
 import { solarProducts, wishlist } from "../static/data";
-import { useState } from "react";
 import {
   AiOutlineSearch,
   AiOutlineHeart,
@@ -11,7 +10,6 @@ import {
 } from "react-icons/ai";
 import { IoIosArrowDown, IoIosArrowForward } from "react-icons/io";
 import { BiMenuAltLeft } from "react-icons/bi";
-// import DropDown from "./DropDown";
 import Navbar from "./NavBar";
 import { CgProfile } from "react-icons/cg";
 import Cart from "./Cart";
@@ -30,7 +28,8 @@ const Header = ({ activeHeading }) => {
   const [loginDropDown, setLoginDropDown] = useState(false);
   const [open, setOpen] = useState(false);
   const { wishlist } = useSelector((state) => state.wishlist);
-  // const [isAuthenticated, user] = useSelector(=(state) => state.user);
+  const isLoggedIn = localStorage.getItem('isLoggedIn');
+  const navigate = useNavigate();
 
   const handleSearchChange = (e) => {
     const term = e.target.value;
@@ -44,13 +43,38 @@ const Header = ({ activeHeading }) => {
     setSearchData(filteredProducts);
   };
 
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > 70) {
-      setActive(true);
+  useEffect(() => {
+    setActive(window.scrollY > 70);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleCartClick = () => {
+    if (!isLoggedIn) {
+      // Prompt user to log in
+      alert("Please log in to view cart.");
     } else {
-      setActive(false);
+      // Open cart
+      setOpenCart(true);
     }
-  });
+  };
+
+  const handleProfileClick = () => {
+    if (!isLoggedIn) {
+      // Prompt user to log in
+      alert("Please log in to view profile.");
+    } else {
+      // Navigate to profile page
+      navigate('/profile');
+    }
+  };
+
+  const LoginAndRegister = ({ isLoggedIn }) => {
+    const [loginDropDown, setLoginDropDown] = useState(false);
+  }
+
+  const handleLoginClick = () => {
+    setLoginDropDown(!loginDropDown);
+  };
 
   return (
     <>
@@ -77,88 +101,86 @@ const Header = ({ activeHeading }) => {
               />
             </Link>
           </div>
+          
           {/* search box */}
-          <div className="w-[50%] relative">
-            <input
-              type="text"
-              placeholder="Search Product..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="h-[40px] w-full px-2 border-[#051d40] border-[2px] rounded-md"
-            />
-            <AiOutlineSearch
-              size={30}
-              className="absolute right-6 top-1.5 cursor-pointer"
-            />
+          {!isLoggedIn ? (
+            <div className="w-[50%] relative">
+              <input
+                type="text"
+                placeholder="Search Product..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="h-[40px] w-full px-2 border-[#051d40] border-[2px] rounded-md"
+              />
+              <AiOutlineSearch
+                size={30}
+                className="absolute right-6 top-1.5 cursor-pointer"
+              />
 
-            {searchData && searchData.length !== 0 ? (
-              <div className="absolute min-h-[30vh] bg-slate-50 shadow-sm-2 z-[9] p-4">
-                {searchData &&
-                  searchData.map((i, index) => {
-                    return (
-                      <Link to={`/product/${i.id}`}>
-                        <div className="w-full flex items-start-py-3">
-                          <h1>{i.name}</h1>
-                        </div>
-                      </Link>
-                    );
-                  })}
-              </div>
-            ) : null}
-          </div>
-
-          <div className="flex w-[170px] bg-black h-[50px]   items-center justify-center rounded-xl cursor-pointer">
-            <div
-              className="relative cursor-pointer mr-[15px] "
-              onClick={() => setLoginDropDown(!loginDropDown)}
-            >
-              <div className=" text-white py-4 px-4 cursor-pointer ">
-                Login{" "}
-              </div>
-
-              {loginDropDown && (
-                <div
-                  className="absolute top-full left-0 bg-white w-36 py-2 rounded-md shadow-md z-20"
-                  onMouseLeave={() => setLoginDropDown(false)}
-                >
-                  <Link to="/LoginPage" className="block px-2 py-2 text-black">
-                    Login as User
-                  </Link>
-                  <Link
-                    to="/vendor-login"
-                    className="block px-2 py-2 text-black"
-                  >
-                    Login as Vendor
-                  </Link>
+              {searchData && searchData.length !== 0 ? (
+                <div className="absolute min-h-[30vh] bg-slate-50 shadow-sm-2 z-[9] p-4">
+                  {searchData &&
+                    searchData.map((i, index) => {
+                      return (
+                        <Link to={`/product/${i.id}`}>
+                          <div className="w-full flex items-start-py-3">
+                            <h1>{i.name}</h1>
+                          </div>
+                        </Link>
+                      );
+                    })}
                 </div>
-              )}
+              ) : null}
             </div>
+          ) : (
+            <div className="w-full flex justify-center items-center">
+              <input
+                type="text"
+                placeholder="Search Product..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="h-[40px] w-[50%] px-2 border-[#051d40] border-[2px] rounded-md"
+              />
+              <AiOutlineSearch
+                size={30}
+                className="ml-2 cursor-pointer"
+              />
+            </div>
+          )}
 
-            <div className="  relative cursor-pointer ">
-              <Link to="/Signup">
-                <div className=" text-white py-4 px-4  cursor-pointer">
-                  Register
-                </div>
+          {!isLoggedIn && (
+            <div className="flex w-[170px] bg-black h-[50px] items-center justify-center rounded-xl cursor-pointer">
+              <div className="relative cursor-pointer mr-[15px]" onClick={() => setLoginDropDown(!loginDropDown)}>
+                <div className="text-white py-4 px-4 cursor-pointer">Login</div>
+                {loginDropDown && (
+                  <div className="absolute top-full left-0 bg-white w-36 py-2 rounded-md shadow-md z-20" onMouseLeave={() => setLoginDropDown(false)}>
+                    <Link to="/LoginPage" className="block px-2 py-2 text-black">Login as User</Link>
+                    <Link to="/vendor-login" className="block px-2 py-2 text-black">Login as Vendor</Link>
+                  </div>
+                )}
+              </div>
+              <div className="relative cursor-pointer ">
+                <Link to="/Signup">
+                  <div className="text-white py-4 px-4 cursor-pointer">Register</div>
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Become a vendor button */}
+          {!isLoggedIn && (
+            <div className={`${styles.button} `} style={{ width: "170px", marginRight: "20px" }}>
+              <Link to="/vendor">
+                <h1 className="text-[#fff] flex items-center">Become a Vendor <IoIosArrowForward className="ml-1" /></h1>
               </Link>
             </div>
-          </div>
-
-          <div
-            className={`${styles.button} `}
-            style={{ width: "170px", marginRight: "20px" }}
-          >
-            <Link to="/vendor">
-              <h1 className="text-[#fff] flex items-center">
-                Become a Vendor <IoIosArrowForward className="ml-1" />
-              </h1>
-            </Link>
-          </div>
+          )}
         </div>
+      </div>
 
         <div
-          className={`${
-            active === true ? "shadow-sm fixed top-0 left-0 z-10" : null
-          } transition hidden 800px:flex items-center justify-between w-full bg-[#051d40] h-[70px]`}
+          className={`${active === true ? "shadow-sm fixed top-0 left-0 z-10" : null
+            } transition hidden 800px:flex items-center justify-between w-full bg-[#051d40] h-[70px]`}
         >
           <div
             className={`${styles.section} relative ${styles.normalFlex} justify-between`}
@@ -202,7 +224,7 @@ const Header = ({ activeHeading }) => {
               <div className={`${styles.normalFlex}`}>
                 <div
                   className="relative cursor-pointer mr-[15px]"
-                  onClick={() => setOpenCart(true)}
+                  onClick={handleCartClick}
                 >
                   <AiOutlineShoppingCart
                     size={30}
@@ -211,23 +233,13 @@ const Header = ({ activeHeading }) => {
                   <span className="absolute right-0 top-0 rounded-full bg-[#FFA500] w-4 h-4 top right p-0 m-0 text-white font-mono text-[12px] leading-tight text-center">
                     {cart && cart.length}
                   </span>
+
                 </div>
               </div>
 
               <div className={`${styles.normalFlex}`}>
-                <div className="relative cursor-pointer mr-[15px]">
-                  {/* {isAuthenticated ? (
-                  <Link to="/profile">
-                    <img src="../dummy.jpeg" />
-                    </Link>
-                ) : (
-                  <Link to="/LoginPage">
-                    <CgProfile size={30} color="rgb(255 255 255 / 83%)" />
-                  </Link>
-                )} */}
-                  <Link to="/profile">
-                    <CgProfile size={30} color="rgb(255 255 255 / 83%)" />
-                  </Link>
+                <div className="relative cursor-pointer mr-[15px]" onClick={handleProfileClick}>
+                  <CgProfile size={30} color="rgb(255 255 255 / 83%)" />
                 </div>
               </div>
 
@@ -241,13 +253,11 @@ const Header = ({ activeHeading }) => {
             </div>
           </div>
         </div>
-      </div>
 
       {/* mobile header */}
       <div
-        className={`${
-          active === true ? "shadow-sm fixed top-0 left-0 z-10" : null
-        } w-full h-[70px] bg-[#fff]  z-50 top-0 left-0 shadow-sm 800px:hidden`}
+        className={`${active === true ? "shadow-sm fixed top-0 left-0 z-10" : null
+          } w-full h-[70px] bg-[#fff]  z-50 top-0 left-0 shadow-sm 800px:hidden`}
       >
         <div className="w-full flex items-center justify-between">
           <div>
@@ -330,16 +340,16 @@ const Header = ({ activeHeading }) => {
               </div>
 
               <Navbar active={activeHeading} />
-              <div
-                className={`${styles.button} ml-4 !rounded-[4px]`}
-                style={{ width: "170px", marginRight: "20px" }}
-              >
-                <Link to="/vendor">
-                  <h1 className="text-[#fff] flex items-center">
-                    Become a Vendor <IoIosArrowForward className="ml-1" />
-                  </h1>
-                </Link>
-              </div>
+
+              {/* Become a vendor button */}
+              {!isLoggedIn && (
+                <div className={`${styles.button} ml-4 !rounded-[4px]`} style={{ width: "170px", marginRight: "20px" }}>
+                  <Link to="/vendor">
+                    <h1 className="text-[#fff] flex items-center">Become a Vendor <IoIosArrowForward className="ml-1" /></h1>
+                  </Link>
+                </div>
+              )}
+
               <br />
               <br />
               <br />

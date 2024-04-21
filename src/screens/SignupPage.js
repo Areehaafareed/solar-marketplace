@@ -1,22 +1,61 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/SignupPage.css"; // Create a new CSS file for SignupPage styles
 import logo5 from "../logo5.png";
-import logincover from "../cover3.jpg";
+import logincover from "../cover2.jpg";
+import { backendURL } from "../config";
 
 const SignupPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const navigate = useNavigate(); // Get navigate object
 
-  const handleSignup = () => {
-    // Perform your signup logic here
-    console.log("Name:", name);
-    console.log("Email:", email);
-    console.log("Password:", password);
-    console.log("Confirm Password:", confirmPassword);
-    // You may want to redirect the user or perform other actions after successful signup
+  const signUpURL = `${backendURL}/Signup`
+  const handleSignup = async (e) => {
+    e.preventDefault(); // Prevent default form submission
+
+    // Ensure all fields are filled
+    if (!name || !email || !password || !confirmPassword) {
+      console.error("All fields are required");
+      return;
+    }
+
+    // Ensure password and confirm password match
+    if (password !== confirmPassword) {
+      console.error("Passwords do not match");
+      return;
+    }
+
+    try {
+      // Send signup data to the server with hashed password
+      const response = await fetch(signUpURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: name,
+          email,
+          password, 
+        }),
+      });
+
+      // Check if signup was successful
+      if (response.ok) {
+        // Redirect to the login page after successful signup
+        console.log('Signup successful');
+        navigate('/LoginPage');
+      } else {
+        // Handle signup error
+        const errorMessage = await response.text();
+        console.error('Error during signup:', errorMessage);
+      }
+    } catch (error) {
+      // Handle any errors that occur during signup
+      console.error('Error during signup:', error.message);
+    }
   };
 
   return (
@@ -25,8 +64,6 @@ const SignupPage = () => {
       style={{
         backgroundImage: `url(${logincover})`,
         backgroundSize: "cover",
-        // backgroundPosition: "center",
-        // backgroundRepeat: "no-repeat",
       }}
     >
       <div className="absolute inset-0 bg-black opacity-50 "></div>
@@ -58,7 +95,7 @@ const SignupPage = () => {
           }}
         >
           <div className="signup-container">
-            <form>
+            <form onSubmit={handleSignup}>
               <label>Full Name:</label>
               <input
                 type="text"
@@ -90,27 +127,15 @@ const SignupPage = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
-              {/* 
-              <div>
-                <button
-                  type="submit"
-                  className="custom-button"
-                  onClick={handleSignup}
-                >
-                  Sign Up
-                </button>
-              </div> */}
               <button
                 type="submit"
                 className="custom-button"
-                onClick={handleSignup}
               >
                 Sign Up
               </button>
               <div
                 style={{
                   display: "flex",
-
                   marginTop: "20px",
                 }}
               >

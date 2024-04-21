@@ -1,5 +1,4 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { RxCross1 } from "react-icons/rx";
 import { Link } from "react-router-dom";
 import styles from "../styles/styles";
@@ -13,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addTocart } from "../redux/actions/cart";
 import { toast } from "react-toastify";
 import { removeFromWishlist, addToWishlist } from "../redux/actions/wishlist";
+import { backendURL } from "../config";
 
 const ProductDetailsCard = ({ setOpen, data }) => {
   const [count, setCount] = useState(1);
@@ -20,9 +20,15 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   const [select, setSelect] = useState();
   const { cart } = useSelector((state) => state.cart);
   const { wishlist } = useSelector((state) => state.wishlist);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // New state to track user's login status
   const dispatch = useDispatch();
 
-  const handleMessageSubmit = () => {};
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    setIsLoggedIn(!!isLoggedIn); // Convert to boolean
+  }, []);
+
+  const handleMessageSubmit = () => { };
 
   const decrementCount = () => {
     if (count > 1) {
@@ -34,7 +40,14 @@ const ProductDetailsCard = ({ setOpen, data }) => {
     setCount(count + 1);
   };
 
-  const addToCartHandler = (id) => {
+  const addToCartHandler = async (id) => {
+    console.log(backendURL);
+    if (!isLoggedIn) {
+      // If user is not logged in, show prompt to login
+      toast.error("Please log in to add items to your cart.");
+      return; // Prevent adding to cart if user is not logged in
+    }
+
     const isItemExists = cart && cart.find((i) => i.id === id);
     if (isItemExists) {
       toast.error("Item already in cart!");
@@ -42,9 +55,37 @@ const ProductDetailsCard = ({ setOpen, data }) => {
       if (data.stock < 1) {
         toast.error("Product stock limited!");
       } else {
-        const cartData = { ...data, qty: 1 };
-        dispatch(addTocart(cartData));
-        toast.success("Item added to cart successfully!");
+        const cartData = { ...data, qty: count };
+
+        try {
+          // Construct the URL for adding to cart
+          const addToCartURL = `${backendURL}/api/add-to-cart`;
+
+          // Send cart item data to the backend
+          const response = await fetch(addToCartURL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              // Include any necessary authentication tokens or headers here
+            },
+            body: JSON.stringify(cartData),
+          });
+
+          // Check if request was successful
+          if (response.ok) {
+            // Dispatch action to add item to Redux store
+            dispatch(addTocart(cartData));
+            toast.success("Item added to cart successfully!");
+          } else {
+            // Handle error response from backend
+            const errorMessage = await response.text();
+            toast.error(`Error: ${errorMessage}`);
+          }
+        } catch (error) {
+          // Handle network errors or exceptions
+          console.error('Error adding to cart:', error);
+          toast.error('Error adding to cart. Please try again later.');
+        }
       }
     }
   };
@@ -164,25 +205,6 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                       +{" "}
                     </button>
                   </div>
-                  {/* <div>
-                    {click ? (
-                      <AiFillHeart
-                        size={30}
-                        className="cursor-pointer"
-                        onClick={() => setClick(!click)}
-                        color={click ? "red" : "#333"}
-                        title="Remove from wishlist"
-                      />
-                    ) : (
-                      <AiOutlineHeart
-                        size={30}
-                        className="cursor-pointer"
-                        onClick={() => setClick(!click)}
-                        color={click ? "red" : "#333"}
-                        title="Add to wishlist"
-                      />
-                    )}
-                  </div> */}
                 </div>
 
                 <div
@@ -190,7 +212,7 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                   onClick={() => addToCartHandler(data.id)}
                 >
                   <span className="text-[#fff] flex items-center">
-                    Add to cart <AiOutlineShoppingCart className="ml-1" />
+                    Add to Cart <AiOutlineShoppingCart className="ml-1" />
                   </span>
                 </div>
               </div>
