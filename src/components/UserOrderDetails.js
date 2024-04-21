@@ -1,11 +1,13 @@
 import { BsFillBagFill } from "react-icons/bs";
 import styles from "../styles/styles";
 import { useDispatch, useSelector } from "react-redux";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { AiFillStar, AiOutlineStar } from "react-icons/ai";
 import { RxCross1 } from "react-icons/rx";
-import { getAllOrdersOfUser } from "../redux/actions/order";
+import { getAllOrdersOfShop, getAllOrdersOfUser } from "../redux/actions/order";
+import { toast } from "react-toastify";
+import { updateOrders } from "../redux/actions/order";
 
 const UserOrderDetails = () => {
   const { orders } = useSelector((state) => state.order);
@@ -18,7 +20,34 @@ const UserOrderDetails = () => {
   const data = orders && orders.find((item) => item._id === id);
   const reviewHandler = async (e) => {};
 
-  const refundHandler = async () => {};
+  const refundHandler = async (orderId) => {
+    try {
+      // Retrieve orders data from localStorage
+      const orders = JSON.parse(localStorage.getItem("userOrders"));
+
+      // Simulate processing refund by updating order status locally
+      const updatedOrders = orders.map((order) => {
+        if (order._id === orderId) {
+          return { ...order, orderStatus: "Processing refund" };
+        }
+        return order;
+      });
+
+      // Store the updated orders data back in localStorage
+      localStorage.setItem("userOrders", JSON.stringify(updatedOrders));
+
+      // Show success message
+      toast.success("Refund process started successfully!");
+    } catch (error) {
+      // Show error message if any
+      toast.error("Failed to start refund process.");
+    }
+  };
+
+  useEffect(() => {
+    // Dispatch the action creator to fetch user's orders
+    dispatch(getAllOrdersOfShop(), [dispatch]);
+  }, []);
   return (
     <div className={`py-4 min-h-screen ${styles.section}`}>
       <div className="w-full flex items-center justify-between">
@@ -42,7 +71,8 @@ const UserOrderDetails = () => {
       <br />
 
       {/* {data &&
-        data?.cart.map((item, index) => {
+        data.orders &&
+        data.orders.map((item, index) => {
           return (
             <div className="w-full flex items-start mb-5">
               <img
@@ -56,7 +86,7 @@ const UserOrderDetails = () => {
                   US${item.discount_price} x {item.qty}
                 </h5>
               </div>
-              {!item.isReviewed && data?.status === "Delivered" ? (
+              {!item.isReviewed && item.orderStatus === "Delivered" ? (
                 <div
                   className={`${styles.button} text-[#fff]`}
                   onClick={() => setOpen(true) || setSelectedItem(item)}
@@ -67,33 +97,12 @@ const UserOrderDetails = () => {
             </div>
           );
         })} */}
-      {data &&
-        data.orders &&
-        data.orders.map((item, index) => {
-          return (
-            <div className="w-full flex items-start mb-5" key={index}>
-              <img
-                src={`${item.images[0]?.url}`}
-                alt=""
-                className="w-[80x] h-[80px]"
-              />
-              <div className="w-full">
-                <h5 className="pl-3 text-[20px]">{item.name}</h5>
-                <h5 className="pl-3 text-[20px] text-[#00000091]">
-                  US${item.discount_price} x {item.qty}
-                </h5>
-              </div>
-              {!item.isReviewed && data?.status === "Delivered" ? (
-                <div
-                  className={`${styles.button} text-[#fff]`}
-                  onClick={() => setOpen(true) || setSelectedItem(item)}
-                >
-                  Write a review
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
+      <div
+        className={`${styles.button} text-[#fff]`}
+        onClick={() => setOpen(true)}
+      >
+        Write a review
+      </div>
 
       {/* review popup */}
       {open && (
@@ -221,11 +230,12 @@ const UserOrderDetails = () => {
             Status:{" "}
             {data?.paymentInfo?.status ? data?.paymentInfo?.status : "Not Paid"}
           </h4>
+
           <br />
-          {data?.status === "Delivered" && (
+          {data?.orderStatus === "Delivered" && (
             <div
               className={`${styles.button} text-white`}
-              onClick={refundHandler}
+              onClick={() => refundHandler(data._id)}
             >
               Give a Refund
             </div>

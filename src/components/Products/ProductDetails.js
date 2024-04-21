@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import styles from "../styles/styles";
+import styles from "../../styles/styles";
 import {
   AiFillHeart,
   AiOutlineHeart,
@@ -8,9 +8,13 @@ import {
   AiOutlineMessage,
 } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
-import { addTocart } from "../redux/actions/cart";
-import { addToWishlist, removeFromWishlist } from "../redux/actions/wishlist";
+import { addTocart } from "../../redux/actions/cart";
+import {
+  addToWishlist,
+  removeFromWishlist,
+} from "../../redux/actions/wishlist";
 import { toast } from "react-toastify";
+import Ratings from "./Ratings";
 
 const ProductDetails = ({ data }) => {
   const { cart } = useSelector((state) => state.cart);
@@ -62,6 +66,10 @@ const ProductDetails = ({ data }) => {
     }
   };
 
+  // const totalReviewsLength = () => {
+  //   product &&
+  //     product.reduce((acc, product) => acc + product.reviews.length, 0);
+  // };
   const handleMessageSubmit = () => {
     navigate("/inbox?conversation=507ebjver884ehfdjeriv84");
   };
@@ -186,7 +194,7 @@ const ProductDetails = ({ data }) => {
   );
 };
 
-const ProductDetailsInfo = ({ data }) => {
+const ProductDetailsInfo = ({ data, totalReviewsLength }) => {
   const [active, setActive] = useState(1);
   return (
     <div className="bg-[#f5f6fb] px-3 800px:px-10 py-2 rounded ">
@@ -267,7 +275,28 @@ const ProductDetailsInfo = ({ data }) => {
 
       {active === 2 ? (
         <div className="w-full justify-center min-h-[40vh] flex items-center">
-          <p>No Reviews Yet!</p>
+          {data &&
+            data.reviews.map((item, index) => (
+              <div className="w-full flex my-2">
+                <img
+                  src={`${item.avatar}`}
+                  alt=""
+                  className="w-[50px] h-[50px] rounded-full"
+                />
+                <div className="pl-2 ">
+                  <div className="w-full flex items-center">
+                    <h1 className="font-[500] mr-3">{item.user}</h1>
+                    <Ratings rating={data?.ratings} />
+                  </div>
+                  <p>{item.comment}</p>
+                </div>
+              </div>
+            ))}
+          <div className="w-full flex justify-center">
+            {data && data.reviews.length === 0 && (
+              <h5>No Reviews have for this product!</h5>
+            )}
+          </div>
         </div>
       ) : null}
 
@@ -304,7 +333,10 @@ const ProductDetailsInfo = ({ data }) => {
                 Total Products: <span className="font-[500]">1,223</span>
               </h5>
               <h5 className="font-[600] pt-3">
-                Total Reviews: <span className="font-[500]">132</span>
+                Total Reviews:{" "}
+                <span className="font-[500]">
+                  {/* {totalReviewsLength} */} 123
+                </span>
               </h5>
               <Link to="/">
                 <div

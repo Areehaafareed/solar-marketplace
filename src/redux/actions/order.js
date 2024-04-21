@@ -19,6 +19,8 @@ export const getAllOrdersOfUser = (userId) => async (dispatch) => {
         image_URL: "/Assets/solar4.jpg",
         totalPrice: 1400,
         orderStatus: "processing",
+        qty: 3,
+        createdAt: "2022-04-09",
       },
       {
         _id: "678cd90",
@@ -26,12 +28,11 @@ export const getAllOrdersOfUser = (userId) => async (dispatch) => {
           {
             name: "Solar Battery",
           },
-          {
-            name: "Solar Charger",
-          },
         ],
+        qty: 6,
         totalPrice: 800,
-        orderStatus: "shipped",
+        orderStatus: "Processing refund",
+        createdAt: "2022-03-01",
       },
       {
         _id: "456ef12",
@@ -41,7 +42,9 @@ export const getAllOrdersOfUser = (userId) => async (dispatch) => {
           },
         ],
         totalPrice: 600,
-        orderStatus: "delivered",
+        qty: 12,
+        orderStatus: "Delivered",
+        createdAt: "2022-04-01",
       },
       // Additional orders
       {
@@ -52,7 +55,9 @@ export const getAllOrdersOfUser = (userId) => async (dispatch) => {
           },
         ],
         totalPrice: 200,
-        orderStatus: "processing",
+        qty: 7,
+        orderStatus: "Processing",
+        createdAt: "2022-08-05",
       },
       {
         _id: "901ij56",
@@ -62,7 +67,9 @@ export const getAllOrdersOfUser = (userId) => async (dispatch) => {
           },
         ],
         totalPrice: 1200,
-        orderStatus: "processing",
+        qty: 3,
+        orderStatus: "Delivered",
+        createdAt: "2022-06-08",
       },
       {
         _id: "234kl78",
@@ -70,14 +77,15 @@ export const getAllOrdersOfUser = (userId) => async (dispatch) => {
           {
             name: "Solar Lights",
           },
-          {
-            name: "Solar Fan",
-          },
         ],
+        qty: 1,
         totalPrice: 500,
         orderStatus: "shipped",
+        createdAt: "2022-04-01",
       },
     ];
+    // Store the orders data in localStorage
+    localStorage.setItem("userOrders", JSON.stringify(orders));
 
     dispatch({
       type: "getAllOrdersUserSuccess",
@@ -113,6 +121,7 @@ export const getAllOrdersOfShop = (userId) => async (dispatch) => {
         totalPrice: 1400,
         orderStatus: "processing",
         qty: 3,
+        createdAt: "2022-04-09",
       },
       {
         _id: "678cd90",
@@ -123,7 +132,8 @@ export const getAllOrdersOfShop = (userId) => async (dispatch) => {
         ],
         qty: 6,
         totalPrice: 800,
-        orderStatus: "shipped",
+        orderStatus: "Processing refund",
+        createdAt: "2022-03-01",
       },
       {
         _id: "456ef12",
@@ -134,7 +144,8 @@ export const getAllOrdersOfShop = (userId) => async (dispatch) => {
         ],
         totalPrice: 600,
         qty: 12,
-        orderStatus: "delivered",
+        orderStatus: "Delivered",
+        createdAt: "2022-04-01",
       },
       // Additional orders
       {
@@ -146,7 +157,8 @@ export const getAllOrdersOfShop = (userId) => async (dispatch) => {
         ],
         totalPrice: 200,
         qty: 7,
-        orderStatus: "processing",
+        orderStatus: "Processing",
+        createdAt: "2022-08-05",
       },
       {
         _id: "901ij56",
@@ -157,7 +169,8 @@ export const getAllOrdersOfShop = (userId) => async (dispatch) => {
         ],
         totalPrice: 1200,
         qty: 3,
-        orderStatus: "processing",
+        orderStatus: "Delivered",
+        createdAt: "2022-06-08",
       },
       {
         _id: "234kl78",
@@ -169,8 +182,11 @@ export const getAllOrdersOfShop = (userId) => async (dispatch) => {
         qty: 1,
         totalPrice: 500,
         orderStatus: "shipped",
+        createdAt: "2022-04-01",
       },
     ];
+    // Store the orders data in localStorage
+    localStorage.setItem("userOrders", JSON.stringify(orders));
 
     dispatch({
       type: "getAllOrdersShopSuccess",

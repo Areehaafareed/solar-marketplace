@@ -1,7 +1,7 @@
 import React from "react";
-import styles from "../styles/styles";
-import { solarProducts } from "../static/data";
-import ProductCard from "./ProductCard";
+import styles from "../../styles/styles";
+import { solarProducts } from "../../static/data";
+import ProductCard from "../ProductCard";
 
 const FeaturedProducts = () => {
   return (

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
-import ProductDetails from "../components/ProductDetails";
+import ProductDetails from "../components/Products/ProductDetails";
 import Footer from "../components/Footer";
 import { useParams } from "react-router-dom";
 import { solarProducts } from "../static/data";
-import SuggestedProduct from "../components/SuggestedProduct";
+import SuggestedProduct from "../components/Products/SuggestedProduct";
 
 const ProductDetailsPage = () => {
   const { id } = useParams();

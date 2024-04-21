@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addToWishlist, removeFromWishlist } from "../redux/actions/wishlist";
 import { addTocart } from "../redux/actions/cart";
 import { toast } from "react-toastify";
+import Ratings from "./Products/Ratings";
 
 const ProductCard = ({ data }) => {
   const [hovered, setHovered] = useState(false);
@@ -91,31 +92,7 @@ const ProductCard = ({ data }) => {
             </h4>
 
             <div className="flex">
-              <AiFillStar
-                className="mr-2 cursor-pointer"
-                size={20}
-                color="#f6ba00"
-              />
-              <AiFillStar
-                className="mr-2 cursor-pointer"
-                size={20}
-                color="#f6ba00"
-              />
-              <AiFillStar
-                className="mr-2 cursor-pointer"
-                size={20}
-                color="#f6ba00"
-              />
-              <AiFillStar
-                className="mr-2 cursor-pointer"
-                size={20}
-                color="#f6ba00"
-              />
-              <AiOutlineStar
-                className="mr-2 cursor-pointer"
-                size={20}
-                color="#f6ba00"
-              />
+              <Ratings rating={data?.ratings} />
             </div>
             <div className="flex w-full " style={{ marginTop: "20px" }}>
               <div className="flex w-full" style={{ marginTop: "30px" }}>
