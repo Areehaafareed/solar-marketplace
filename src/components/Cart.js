@@ -1,39 +1,95 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { RxCross1 } from "react-icons/rx";
 import { IoBagHandleOutline } from "react-icons/io5";
-import styles from "../styles/styles";
 import { HiOutlineMinus, HiPlus } from "react-icons/hi";
+import styles from "../styles/styles";
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { addTocart, removeFromCart, emptyCart } from "../redux/actions/cart"; // Import emptyCart action
 import { toast } from "react-toastify";
+import { backendURL } from "../config";
 
 const Cart = ({ setOpenCart }) => {
-  const { cart } = useSelector((state) => state.cart);
-  const dispatch = useDispatch();
+  const [cart, setCart] = useState([]);
+  const userEmail = localStorage.getItem('userEmail'); // Retrieve user email from localStorage
 
-  const removeFromCartHandler = (data) => {
-    dispatch(removeFromCart(data));
+  // Load cart items from local storage on component mount
+  useEffect(() => {
+    const storedCart = JSON.parse(localStorage.getItem("cartItems")) ?? [];
+    setCart(storedCart);
+  }, []);
+
+  const updateCart = (updatedCart) => {
+    setCart(updatedCart);
+    localStorage.setItem("cartItems", JSON.stringify(updatedCart));
   };
 
+  const removeFromCartHandler = (data) => {
+    const updatedCart = cart.filter(item => item !== data);
+    updateCart(updatedCart);
+  };
+
+  const quantityChangeHandler = (data) => {
+    // Check if the item is already in the cart
+    const itemIndex = cart.findIndex(item => item.data.id === data.data.id);
+
+    if (itemIndex !== -1) {
+      // If the item is already in the cart, update its quantity
+      const updatedCart = [...cart];
+      updatedCart[itemIndex].qty = data.qty;
+      updateCart(updatedCart);
+    } else {
+      // If the item is not in the cart, add it
+      const updatedCart = [...cart, data];
+      updateCart(updatedCart);
+    }
+
+    console.log("Request payload:", {
+      email: userEmail,
+      item: data
+    });
+
+    const addToCartURL = `${backendURL}/add-to-cart`;
+
+    try {
+      fetch(addToCartURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: userEmail,
+          item: data // Pass the entire data object
+        })
+      })
+        .then(response => response.json())
+        .then(responseData => {
+          console.log(responseData); // Log the response from the backend
+        })
+        .catch(error => {
+          console.error('Error adding item to cart:', error);
+          // Handle error, show toast message, etc.
+        });
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+      // Handle error, show toast message, etc.
+    }
+  };
+
+  const emptyCartHandler = () => {
+    setCart([]);
+    localStorage.removeItem("cartItems");
+    toast.success("Cart has been emptied!");
+  };
+
+  // Calculate total price
   const totalPrice = cart.reduce(
     (acc, item) => acc + item.qty * item.discount_price,
     0
   ).toFixed(2);
 
-  const quantityChangeHandler = (data) => {
-    dispatch(addTocart(data));
-  };
-
-  const emptyCartHandler = () => {
-    dispatch(emptyCart()); // Dispatch the emptyCart action
-    toast.success("Cart has been emptied!");
-  };
-
   return (
     <div className="fixed top-0 left-0 w-full bg-[#0000004b] h-screen z-10">
       <div className="fixed top-0 right-0 h-full w-[80%] 800px:w-[25%] bg-white flex flex-col overflow-y-scroll justify-between shadow-sm">
-        {cart && cart.length === 0 ? (
+        {cart.length === 0 ? (
           <div className="w-full h-screen flex items-center justify-center">
             <div className="flex w-full justify-end pt-5 pr-5 fixed top-3 right-3">
               <RxCross1
@@ -62,22 +118,21 @@ const Cart = ({ setOpenCart }) => {
               <div className={`${styles.normalFlex} p-4`}>
                 <IoBagHandleOutline size={25} />
                 <h5 className="pl-2 text-[20px] font-[500]">
-                  {cart && cart.length} items
+                  {cart.length} items
                 </h5>
               </div>
 
               {/* cart Single Items */}
               <br />
               <div className="w-full border-t">
-                {cart &&
-                  cart.map((i, index) => (
-                    <CartSingle
-                      key={index}
-                      data={i}
-                      quantityChangeHandler={quantityChangeHandler}
-                      removeFromCartHandler={removeFromCartHandler}
-                    />
-                  ))}
+                {cart.map((item, index) => (
+                  <CartSingle
+                    key={index}
+                    data={item}
+                    quantityChangeHandler={quantityChangeHandler}
+                    removeFromCartHandler={removeFromCartHandler}
+                  />
+                ))}
               </div>
             </div>
 

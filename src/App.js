@@ -76,6 +76,8 @@ const App = () => {
   // Function to clear local storage
   const clearLocalStorage = () => {
     localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('email');
+    localStorage.removeItem('fullName');
   };
 
   if (isLoading) {

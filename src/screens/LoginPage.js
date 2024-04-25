@@ -32,8 +32,12 @@ const LoginPage = () => {
 
       // Check if login was successful
       if (response.ok) {
+        const data = await response.json(); // Parse response JSON
         // Set login status in local storage
         localStorage.setItem('isLoggedIn', true);
+        // Store user's email and full name in local storage for easy access
+        localStorage.setItem('email', data.email);
+        localStorage.setItem('fullName', data.fullName);
         // Redirect to the dashboard or home page after successful login
         console.log('Login successful');
         navigate('/');

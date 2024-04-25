@@ -52,21 +52,32 @@ const CreateProduct = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const newForm = new FormData();
+        // Create a new FormData object to store form data
+        const formData = new FormData();
 
-        images.forEach((image) => {
-            newForm.set("images", image);
+        // Append form fields to FormData object
+        formData.append("name", name);
+        formData.append("description", description);
+        formData.append("category", category);
+        formData.append("tags", tags);
+        formData.append("originalPrice", originalPrice);
+        formData.append("stock", stock);
+        formData.append("shopId", seller.id);
+
+        // Append optional fields only if they are not empty
+        if (discountPrice) {
+            formData.append("discountPrice", discountPrice);
+        }
+
+        // Append images to FormData object
+        images.forEach((image, index) => {
+            formData.append(`image${index}`, image);
         });
-        newForm.append("name", name);
-        newForm.append("description", description);
-        newForm.append("category", category);
-        newForm.append("tags", tags);
-        newForm.append("originalPrice", originalPrice);
-        newForm.append("discountPrice", discountPrice);
-        newForm.append("stock", stock);
-        newForm.append("shopId", seller.id);
-        dispatch(createProduct(newForm));
+
+        // Dispatch the createProduct action with FormData object
+        dispatch(createProduct(formData));
     };
+
     return (
         <div className="w-[90%] 800px:w-[50%] bg-white  shadow h-[80vh] rounded-[4px] p-3 overflow-y-scroll">
             <h5 className="text-[30px] font-Poppins text-center">Create Product</h5>

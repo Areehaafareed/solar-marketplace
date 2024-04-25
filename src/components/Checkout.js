@@ -208,7 +208,7 @@ const ShippingInfo = ({
               onChange={(e) => setCountry(e.target.value)}
             >
               <option className="block pb-2" value="">
-                Choose your country
+                Choose Your Country
               </option>
               {Country &&
                 Country.getAllCountries().map((item) => (
@@ -226,7 +226,7 @@ const ShippingInfo = ({
               onChange={(e) => setCity(e.target.value)}
             >
               <option className="block pb-2" value="">
-                Choose your City
+                Choose Your City
               </option>
               {State &&
                 State.getStatesOfCountry(country).map((item) => (
@@ -240,7 +240,7 @@ const ShippingInfo = ({
 
         <div className="w-full flex pb-3">
           <div className="w-[50%]">
-            <label className="block pb-2">Address1</label>
+            <label className="block pb-2">Address 1</label>
             <input
               type="address"
               required
@@ -250,7 +250,7 @@ const ShippingInfo = ({
             />
           </div>
           <div className="w-[50%]">
-            <label className="block pb-2">Address2</label>
+            <label className="block pb-2">Address 2</label>
             <input
               type="address"
               value={address2}
@@ -267,7 +267,7 @@ const ShippingInfo = ({
         className="text-[18px] cursor-pointer inline-block"
         onClick={() => setUserInfo(!userInfo)}
       >
-        Choose From saved address
+        Choose from Saved Addresses
       </h5>
       {userInfo && (
         <div className="w-full flex">
@@ -299,12 +299,12 @@ const CartData = ({
   return (
     <div className="w-full bg-[#fff] rounded-md p-5 pb-8">
       <div className="flex justify-between">
-        <h3 className="text-[16px] font-[400] text-[#000000a4]">subtotal:</h3>
+        <h3 className="text-[16px] font-[400] text-[#000000a4]">Sub Total:</h3>
         <h5 className="text-[18px] font-[600]">${subTotalPrice}</h5>
       </div>
       <br />
       <div className="flex justify-between">
-        <h3 className="text-[16px] font-[400] text-[#000000a4]">shipping:</h3>
+        <h3 className="text-[16px] font-[400] text-[#000000a4]">Shipping:</h3>
         <h5 className="text-[18px] font-[600]">${shipping.toFixed(2)}</h5>
       </div>
       <br />
@@ -320,7 +320,7 @@ const CartData = ({
         <input
           type="text"
           className={`${styles.input} h-[40px] pl-2`}
-          placeholder="Coupoun code"
+          placeholder="Coupon Code"
           value={couponCode}
           onChange={(e) => setCouponCode(e.target.value)}
           required

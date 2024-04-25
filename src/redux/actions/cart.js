@@ -4,14 +4,17 @@ export const REMOVE_FROM_CART = 'REMOVE_FROM_CART';
 export const EMPTY_CART = 'EMPTY_CART';
 
 // add to cart
-export const addTocart = (data) => async (dispatch, getState) => {
+export const addTocart = (data, userEmail) => async (dispatch, getState) => {
+  // Dispatch the action to add the item to the cart in Redux store
   dispatch({
-    type: ADD_TO_CART, // Use the defined action type
-    payload: data,
+    type: 'ADD_TO_CART',
+    payload: { data, userEmail }
   });
 
+  // Save the updated cart items to localStorage
   localStorage.setItem("cartItems", JSON.stringify(getState().cart.cart));
-  return data;
+
+  return data; // Return the added item
 };
 
 // remove from cart

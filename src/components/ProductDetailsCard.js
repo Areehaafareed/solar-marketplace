@@ -41,7 +41,6 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   };
 
   const addToCartHandler = async (id) => {
-    console.log(backendURL);
     if (!isLoggedIn) {
       // If user is not logged in, show prompt to login
       toast.error("Please log in to add items to your cart.");
@@ -55,11 +54,11 @@ const ProductDetailsCard = ({ setOpen, data }) => {
       if (data.stock < 1) {
         toast.error("Product stock limited!");
       } else {
-        const cartData = { ...data, qty: count };
+        const cartData = { ...data, qty: 1, email: localStorage.getItem('userEmail') }; // Include logged-in email in the request payload
 
         try {
           // Construct the URL for adding to cart
-          const addToCartURL = `${backendURL}/api/add-to-cart`;
+          const addToCartURL = `${backendURL}/add-to-cart`;
 
           // Send cart item data to the backend
           const response = await fetch(addToCartURL, {

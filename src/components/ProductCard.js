@@ -26,9 +26,13 @@ const ProductCard = ({ data }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // New state to track user's login status
   const dispatch = useDispatch();
 
+  console.log("HEREEEEEE", window.localStorage.getItem("email"))
+
   useEffect(() => {
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     setIsLoggedIn(!!isLoggedIn); // Convert to boolean
+    const userEmail = localStorage.getItem('email');
+    console.log('User Email:', userEmail);
   }, []);
 
   const handleMouseEnter = () => {
@@ -71,11 +75,12 @@ const ProductCard = ({ data }) => {
       if (data.stock < 1) {
         toast.error("Product stock limited!");
       } else {
-        const cartData = { ...data, qty: 1 }; // Set qty to 1 for now, you may change this according to your requirement
-
+        const cartData = { ...data, qty: 1 };
+        let email = window.localStorage.getItem("email")
+        console.log("IDHRRR",cartData)
         try {
           // Construct the URL for adding to cart
-          const addToCartURL = `${backendURL}/api/add-to-cart`;
+          const addToCartURL = `${backendURL}/add-to-cart`;
 
           // Send cart item data to the backend
           const response = await fetch(addToCartURL, {
@@ -84,13 +89,14 @@ const ProductCard = ({ data }) => {
               'Content-Type': 'application/json',
               // Include any necessary authentication tokens or headers here
             },
-            body: JSON.stringify(cartData),
+            body: JSON.stringify({item: cartData , email}),
           });
 
           // Check if request was successful
           if (response.ok) {
             // Dispatch action to add item to Redux store
             dispatch(addTocart(cartData));
+            
             toast.success("Item added to cart successfully!");
           } else {
             // Handle error response from backend

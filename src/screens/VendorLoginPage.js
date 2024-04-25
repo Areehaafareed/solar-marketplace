@@ -3,20 +3,49 @@ import { Link, useNavigate } from "react-router-dom";
 import "../styles/LoginPage.css";
 import logo5 from "../logo5.png";
 import logincover from "../cover.jpg";
+import { backendURL } from "../config";
 
 const VendorLoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault(); // Prevent the default form submission behavior
-    // Perform your authentication logic here
-    console.log("Email:", email);
-    console.log("Password:", password);
-    navigate(`/dashboard`);
-    // You may want to redirect the user or perform other actions after successful login
+
+    const vendorLoginURL = `${backendURL}/vendor-login`
+
+    try {
+      const response = await fetch(vendorLoginURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to login');
+      }
+
+      const data = await response.json();
+      console.log(data.message); // Log success message
+
+      // Extract vendor email and company from the response
+      const { email: vendorEmail, company: vendorCompany } = data;
+
+      // Store vendor email and company in local storage
+      localStorage.setItem('vendorEmail', vendorEmail);
+      localStorage.setItem('vendorCompany', vendorCompany);
+
+      // Redirect to dashboard
+      navigate(`/dashboard`);
+    } catch (error) {
+      console.error('Error during login:', error);
+      // Handle error (e.g., show error message to the user)
+    }
   };
+
 
   return (
     <div

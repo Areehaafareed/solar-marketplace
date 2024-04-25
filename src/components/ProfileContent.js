@@ -14,19 +14,86 @@ import { MdOutlineTrackChanges, MdTrackChanges } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getAllOrdersOfUser } from "../redux/actions/order";
+import { backendURL } from "../config";
 
 const ProfileContent = ({ active, data }) => {
-  //   const user = useSelector((state) => state.u
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState(localStorage.getItem("fullName") || "");
+  const [email, setEmail] = useState(localStorage.getItem("email") || "");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [zipCode, setZipCode] = useState("");
   const [address, setAddress] = useState("");
+  const [profilePicture, setProfilePicture] = useState(null);
+  const updateNameURL = `${backendURL}/update-name`
+  const updateProfilePictureURL = `${backendURL}/update-profile-picture`
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    // Retrieve full name and email from local storage when the component mounts
+    const fullName = localStorage.getItem("fullName");
+    const userEmail = localStorage.getItem("email");
+    setName(fullName);
+    setEmail(userEmail);
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const storedFullName = localStorage.getItem("fullName");
+
+    try {
+      // Check if the name in the field is different from the one in localStorage
+      if (name !== storedFullName) {
+        // Send request to update full name
+        const updateNameResponse = await fetch(updateNameURL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ fullName: name, email: email }),
+        });
+
+        if (updateNameResponse.ok) {
+          // Update the name displayed on the screen and in localStorage
+          setName(name);
+          localStorage.setItem("fullName", name);
+          // Display success toast
+          toast.success("Full name updated successfully!");
+        } else {
+          // Display error toast
+          toast.error("Failed to update name");
+        }
+      }
+
+      // Check if profile picture was updated
+      if (profilePicture !== null) {
+        const formData = new FormData();
+        formData.append("profilePicture", profilePicture);
+        formData.append("email", email); // Include the user's email
+
+        // Send request to update profile picture
+        const updateProfilePictureResponse = await fetch(updateProfilePictureURL, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (updateProfilePictureResponse.ok) {
+          // Display success toast
+          toast.success("Profile picture updated successfully!");
+        } else {
+          // Display error toast
+          toast.error("Failed to update profile picture");
+        }
+      }
+
+      // Reset profile picture state
+      setProfilePicture(null);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      // Display error toast
+      toast.error("An error occurred while updating profile");
+    }
   };
+
   return (
     <div className="w-full">
       {/* profilePage */}
@@ -34,17 +101,32 @@ const ProfileContent = ({ active, data }) => {
         <>
           <div className="flex justify-center w-full">
             <div className="relative">
-              <CgProfile
-                size={35}
-                className="w-[150px] h-[150px]  border-[3px] border-[#3ad132] rounded-full "
-              />
-              <div
-                className="w-[30px] h-[30px] bg-[#E3E9EE] rounded-full flex
-            items-center justify-center cursor-pointer absolute bottom-[5px]
-            right-[5px]"
+              {profilePicture ? (
+                <img
+                  src={profilePicture}
+                  alt="Profile"
+                  className="w-[150px] h-[150px] border-[3px] border-[#3ad132] rounded-full"
+                />
+              ) : (
+                <CgProfile
+                  size={35}
+                  className="w-[150px] h-[150px]  border-[3px] border-[#3ad132] rounded-full "
+                />
+              )}
+              <label
+                htmlFor="profile-picture-input"
+                className="w-[30px] h-[30px] bg-[#E3E9EE] rounded-full flex items-center justify-center cursor-pointer absolute bottom-[5px] right-[5px]"
               >
                 <AiOutlineCamera />
-              </div>
+                <input
+                  id="profile-picture-input"
+                  type="file"
+                  onChange={(e) =>
+                    setProfilePicture(e.target.files[0])}
+                  accept=".png, .jpg, .jpeg, .svg"
+                  className="hidden"
+                />
+              </label>
             </div>
           </div>
           <br />
@@ -52,58 +134,35 @@ const ProfileContent = ({ active, data }) => {
           <div className="w-full px-5">
             <form onSubmit={handleSubmit} aria-required={true}>
               <div className="w-full  800px:flex block pb-3">
-                <div className=" w-[100%] 800px:w-[50%]">
-                  <label className="block pb-2">Full Name</label>
+                <div className=" w-[100%] 800px:w-[50%] mr-4">
+                  <label className="block pb-1 font-bold">Full Name</label>
                   <input
                     type="text"
-                    className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
+                    className={`${styles.input} border border-gray-300 rounded-md px-3 py-2 w-full`}
                     required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    value={name} // Reflect the changes in the name state variable
+                    onChange={(e) => setName(e.target.value)} // Update the name state variable
                   />
                 </div>
 
                 <div className=" w-[100%] 800px:w-[50%]">
-                  <label className="block pb-2">Email Address</label>
+                  <label className="block pb-1 font-bold">Email Address</label>
                   <input
                     type="text"
-                    className={`${styles.input} !w-[95%] mb-1 800px:mb-0`}
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    className="border border-gray-300 rounded-md px-3 py-2 w-full"
+                    readOnly // Make the email address non-editable
+                    value={email} // Display the email address
                   />
                 </div>
               </div>
-              <div className="w-full 800px:flex block pb-3">
-                <div className="w-[100%] 800px:w-[50%]">
-                  <label className="block pb-2">Phone Number</label>
-                  <input
-                    type="number"
-                    className={`${styles.input} !w-[95%] `}
-                    required
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                  />
-                </div>
-
-                <div className="w-[100%] 800px:w-[50%]">
-                  <label className="block pb-2">Enter Password</label>
-                  <input
-                    type="number"
-                    className={`${styles.input} !w-[95%]`}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
+              <div className="flex justify-center mt-8 mx-auto">
+                <input
+                  className="w-[230px] h-[45px] border border-[#3a24db] text-center text-[#3a24db] rounded-[3px] cursor-pointer"
+                  required
+                  value="Update"
+                  type="submit"
+                />
               </div>
-
-              <input
-                className={`w-[250px] h-[40px] border border-[#3a24db] text-center text-[#3a24db] rounded-[3px] mt-8 cursor-pointer`}
-                required
-                value="Update"
-                type="submit"
-              />
             </form>
           </div>
         </>
@@ -459,17 +518,47 @@ const TrackOrder = () => {
   );
 };
 
-const ChangePassword = () => {
+const ChangePassword = ({ email }) => {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const passwordChangeHandler = async (e) => {
     e.preventDefault();
+
+    // Check if new password and confirm password match
+    if (newPassword !== confirmPassword) {
+      toast.error("New password and confirm password do not match");
+      return;
+    }
+
+    const changePasswordURL = `${backendURL}/change-password`;
+    try {
+      // Send request to server to change password
+      const response = await fetch(changePasswordURL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, oldPassword, newPassword }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        toast.error(error.message);
+        return;
+      }
+
+      toast.success("Password updated successfully!");
+    } catch (error) {
+      console.error("Error changing password:", error);
+      toast.error("An error occurred while changing password");
+    }
   };
+
   return (
     <div className="w-full px-5">
-      <h1 className=" text-[25px] text-center block font-[600] text-[#000000ba] pb-2">
+      <h1 className="text-[25px] text-center block font-[600] text-[#000000ba] pb-2">
         Change Password
       </h1>
 
@@ -479,7 +568,7 @@ const ChangePassword = () => {
           onSubmit={passwordChangeHandler}
           className="flex flex-col items-center"
         >
-          <div className=" w-[100%] 800px:w-[50%] mt-5">
+          <div className="w-[100%] 800px:w-[50%] mt-5">
             <label className="block pb-2">Enter your old password</label>
             <input
               type="password"
@@ -489,7 +578,7 @@ const ChangePassword = () => {
               onChange={(e) => setOldPassword(e.target.value)}
             />
           </div>
-          <div className=" w-[100%] 800px:w-[50%] mt-2">
+          <div className="w-[100%] 800px:w-[50%] mt-2">
             <label className="block pb-2">Enter your new password</label>
             <input
               type="password"
@@ -499,7 +588,7 @@ const ChangePassword = () => {
               onChange={(e) => setNewPassword(e.target.value)}
             />
           </div>
-          <div className=" w-[100%] 800px:w-[50%] mt-2">
+          <div className="w-[100%] 800px:w-[50%] mt-2">
             <label className="block pb-2">Enter your confirm password</label>
             <input
               type="password"

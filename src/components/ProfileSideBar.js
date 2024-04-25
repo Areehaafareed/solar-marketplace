@@ -22,6 +22,9 @@ const ProfileSideBar = ({ setActive, active }) => {
     localStorage.removeItem("authToken");
     // Remove isLoggedIn flag from local storage
     localStorage.removeItem("isLoggedIn");
+    // Remove email and fullName from local storage
+    localStorage.removeItem('email');
+    localStorage.removeItem('fullName');
     // Navigate to login page
     navigate("/LoginPage");
   };
