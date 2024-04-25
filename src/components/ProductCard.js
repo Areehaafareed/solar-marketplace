@@ -16,6 +16,7 @@ import { addToWishlist, removeFromWishlist } from "../redux/actions/wishlist";
 import { addTocart } from "../redux/actions/cart";
 import { toast } from "react-toastify";
 import { backendURL } from "../config";
+import Ratings from "./Products/Ratings";
 
 const ProductCard = ({ data }) => {
   const [hovered, setHovered] = useState(false);
@@ -29,7 +30,7 @@ const ProductCard = ({ data }) => {
   console.log("HEREEEEEE", window.localStorage.getItem("email"))
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
     setIsLoggedIn(!!isLoggedIn); // Convert to boolean
     const userEmail = localStorage.getItem('email');
     console.log('User Email:', userEmail);
@@ -84,9 +85,9 @@ const ProductCard = ({ data }) => {
 
           // Send cart item data to the backend
           const response = await fetch(addToCartURL, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
               // Include any necessary authentication tokens or headers here
             },
             body: JSON.stringify({item: cartData , email}),
@@ -105,8 +106,8 @@ const ProductCard = ({ data }) => {
           }
         } catch (error) {
           // Handle network errors or exceptions
-          console.error('Error adding to cart:', error);
-          toast.error('Error adding to cart. Please try again later.');
+          console.error("Error adding to cart:", error);
+          toast.error("Error adding to cart. Please try again later.");
         }
       }
     }
@@ -139,31 +140,7 @@ const ProductCard = ({ data }) => {
             </h4>
 
             <div className="flex">
-              <AiFillStar
-                className="mr-2 cursor-pointer"
-                size={20}
-                color="#f6ba00"
-              />
-              <AiFillStar
-                className="mr-2 cursor-pointer"
-                size={20}
-                color="#f6ba00"
-              />
-              <AiFillStar
-                className="mr-2 cursor-pointer"
-                size={20}
-                color="#f6ba00"
-              />
-              <AiFillStar
-                className="mr-2 cursor-pointer"
-                size={20}
-                color="#f6ba00"
-              />
-              <AiOutlineStar
-                className="mr-2 cursor-pointer"
-                size={20}
-                color="#f6ba00"
-              />
+              <Ratings rating={data?.ratings} />
             </div>
             <div className="flex w-full " style={{ marginTop: "20px" }}>
               <div className="flex w-full" style={{ marginTop: "30px" }}>
@@ -220,7 +197,7 @@ const ProductCard = ({ data }) => {
             <ProductDetailsCard
               setOpen={setOpen}
               data={data}
-            // addToCart={addToCart}
+              // addToCart={addToCart}
             />
           ) : null}
         </div>

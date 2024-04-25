@@ -1,8 +1,8 @@
 import React from "react";
-import { solarProducts } from "../static/data";
+import { solarProducts } from "../../static/data";
 import { useState, useEffect } from "react";
-import styles from "../styles/styles";
-import ProductCard from "./ProductCard";
+import styles from "../../styles/styles";
+import ProductCard from "../ProductCard";
 
 const SuggestedProduct = ({ data }) => {
   const [product, setProduct] = useState();

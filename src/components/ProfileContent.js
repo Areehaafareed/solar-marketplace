@@ -283,7 +283,7 @@ const AllOrder = () => {
                       {order.orderStatus}
                     </td>
                     <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                      <Link to={`/order/${order._id}`}>
+                      <Link to={`/user/order/${order._id}`}>
                         <button className="flex items-center">
                           <AiOutlineArrowRight size={18} />
                         </button>
@@ -301,31 +301,16 @@ const AllOrder = () => {
 };
 
 const AllRefundsOrder = () => {
-  const orders = [
-    {
-      _id: "678cd90",
-      orderItems: [
-        {
-          name: "Solar Battery",
-        },
-        {
-          name: "Solar Charger",
-        },
-      ],
-      totalPrice: 800,
-      orderStatus: "shipped",
-    },
-    {
-      _id: "456ef12",
-      orderItems: [
-        {
-          name: "Solar Inverter",
-        },
-      ],
-      totalPrice: 600,
-      orderStatus: "delivered",
-    },
-  ];
+  const { orders } = useSelector((state) => state.order);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getAllOrdersOfUser()); // Call the action without passing userId
+  }, [dispatch]);
+
+  const eligibleOrder =
+    orders && orders.filter((item) => item.orderStatus === "Processing refund");
+
   return (
     <div className="flex flex-col">
       <div className="overflow-x-auto sm:mx-0.5 lg:mx-0.5">
@@ -365,7 +350,7 @@ const AllRefundsOrder = () => {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order, index) => (
+                {eligibleOrder.map((order, index) => (
                   <tr
                     key={index}
                     className={
@@ -410,31 +395,12 @@ const AllRefundsOrder = () => {
 };
 
 const TrackOrder = () => {
-  const orders = [
-    {
-      _id: "678cd90",
-      orderItems: [
-        {
-          name: "Solar Battery",
-        },
-        {
-          name: "Solar Charger",
-        },
-      ],
-      totalPrice: 800,
-      orderStatus: "shipped",
-    },
-    {
-      _id: "456ef12",
-      orderItems: [
-        {
-          name: "Solar Inverter",
-        },
-      ],
-      totalPrice: 600,
-      orderStatus: "delivered",
-    },
-  ];
+  const { orders } = useSelector((state) => state.order);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getAllOrdersOfUser()); // Call the action without passing userId
+  }, [dispatch]);
   return (
     <div className="flex flex-col">
       <div className="overflow-x-auto sm:mx-0.5 lg:mx-0.5">
@@ -501,7 +467,7 @@ const TrackOrder = () => {
                       {order.orderStatus}
                     </td>
                     <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                      <Link to={`/order/${order._id}`}>
+                      <Link to={`/track/order/${order._id}`}>
                         <button className="flex items-center">
                           <MdOutlineTrackChanges size={18} />
                         </button>

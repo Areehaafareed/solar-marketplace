@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
-import ProductDetails from "../components/ProductDetails";
+import ProductDetails from "../components/Products/ProductDetails";
 import Footer from "../components/Footer";
 import { useParams } from "react-router-dom";
-import SuggestedProduct from "../components/SuggestedProduct";
+import SuggestedProduct from "../components/Products/SuggestedProduct";
 import SolarDetails from "../components/SolarDetails";
 import { solarPackagesData } from "../static/data";
 

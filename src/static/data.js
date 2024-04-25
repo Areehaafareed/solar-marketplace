@@ -18,9 +18,13 @@ export const solarProducts = [
     },
     price: 39.99,
     discount_price: 35.99,
-    rating: 4.5,
+    ratings: 4.5,
     total_sell: 50,
     stock: 20,
+    reviews: [
+      { user: "John", comment: "Great efficiency, highly recommended!" },
+      { user: "Jane", comment: "Excellent product, very satisfied!" },
+    ],
   },
   {
     id: 2,
@@ -39,9 +43,13 @@ export const solarProducts = [
     },
     price: 59.99,
     discount_price: 54.99,
-    rating: 4.2,
+    ratings: 4.2,
     total_sell: 30,
     stock: 15,
+    reviews: [
+      { user: "Alice", comment: "Very smart and efficient inverter!" },
+      { user: "Bob", comment: "Easy to install and great performance!" },
+    ],
   },
   {
     id: 3,
@@ -60,9 +68,13 @@ export const solarProducts = [
     },
     price: 79.99,
     discount_price: 74.99,
-    rating: 4.0,
+    ratings: 4.0,
     total_sell: 25,
     stock: 12,
+    reviews: [
+      { user: "David", comment: "Great battery life, worth the price!" },
+      { user: "Emily", comment: "Reliable performance, highly recommended!" },
+    ],
   },
   {
     id: 4,
@@ -81,9 +93,13 @@ export const solarProducts = [
     },
     price: 49.99,
     discount_price: 39.99,
-    rating: 4.8,
+    ratings: 4.8,
     total_sell: 40,
     stock: 18,
+    reviews: [
+      { user: "John", comment: "Great efficiency, highly recommended!" },
+      { user: "Jane", comment: "Excellent product, very satisfied!" },
+    ],
   },
   {
     id: 5,
@@ -102,9 +118,13 @@ export const solarProducts = [
     },
     price: 30.99,
     discount_price: 24.99,
-    rating: 4.5,
+    ratings: 4.5,
     total_sell: 35,
     stock: 3,
+    reviews: [
+      { user: "Alice", comment: "Very smart and efficient inverter!" },
+      { user: "Bob", comment: "Easy to install and great performance!" },
+    ],
   },
   {
     id: 6,
@@ -123,9 +143,13 @@ export const solarProducts = [
     },
     price: 27.99,
     discount_price: 25.99,
-    rating: 4.7,
+    ratings: 4.7,
     total_sell: 30,
     stock: 20,
+    reviews: [
+      { user: "David", comment: "Great battery life, worth the price!" },
+      { user: "Emily", comment: "Reliable performance, highly recommended!" },
+    ],
   },
   {
     id: 7,
@@ -144,9 +168,21 @@ export const solarProducts = [
     },
     price: 49.99,
     discount_price: 44.99,
-    rating: 4.6,
+    ratings: 3,
     total_sell: 45,
     stock: 4,
+    reviews: [
+      {
+        user: "Alice",
+        comment: "Very smart and efficient inverter!",
+        avatar: "../dummy.jpeg",
+      },
+      {
+        user: "Bob",
+        comment: "Easy to install and great performance!",
+        avatar: "../dummy.jpeg",
+      },
+    ],
   },
   {
     id: 8,
@@ -165,9 +201,10 @@ export const solarProducts = [
     },
     price: 79.99,
     discount_price: 69.99,
-    rating: 4.4,
+    ratings: 4.1,
     total_sell: 35,
     stock: 9,
+    reviews: [],
   },
   {
     id: 9,
@@ -186,9 +223,21 @@ export const solarProducts = [
     },
     price: 29.99,
     discount_price: 24.99,
-    rating: 4.6,
+    ratings: 4.6,
     total_sell: 30,
     stock: 12,
+    reviews: [
+      {
+        user: "David",
+        comment: "Great battery life, worth the price!",
+        avatar: "../dummy.jpeg",
+      },
+      {
+        user: "Emily",
+        comment: "Reliable performance, highly recommended!",
+        avatar: "../dummy.jpeg",
+      },
+    ],
   },
 ];
 
@@ -528,7 +577,7 @@ export const solarPackagesData = [
   },
   {
     id: 5,
-    name: "Off-Grid Solar Power System",
+    name: "Off-Grid Power System",
     description:
       "Gain independence with our off-grid solar power system. Ideal for remote locations or those seeking energy self-sufficiency, our off-grid system provides reliable power wherever you are. With battery storage and long-term durability, Dawson Electrics offers a solution you can trust.",
     image_URL: "/Assets/offgrid.jpg",
@@ -572,7 +621,7 @@ export const solarPackagesData = [
   },
   {
     id: 7,
-    name: "Industrial Solar Power Solution",
+    name: "Industrial Power Solution",
     description:
       "Power your industrial operations with our robust solar solution. Designed for heavy-duty performance, our industrial solar solution offers customizable configurations to meet your specific requirements. With industrial-grade components and reliable performance, Amazon provides a solution you can depend on.",
     image_URL: "/Assets/power.jpg",
