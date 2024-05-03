@@ -258,6 +258,23 @@ app.post('/add-to-cart', (req, res) => {
     });
 });
 
+// Route to get cart items for a user
+app.get('/get-cart-items', async (req, res) => {
+    const userEmail = req.query.email;
+
+    try {
+        // Query the database to retrieve cart items for the provided email
+        const getCartItemsSql = 'SELECT * FROM cart_items WHERE email = ?';
+        const [rows] = await db.promise().query(getCartItemsSql, [userEmail]);
+
+        // Send the retrieved cart items as a response
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error('Error getting cart items:', error);
+        res.status(500).json({ error: 'Error getting cart items' });
+    }
+});
+
 // Add item to wishlist
 app.post('/api/add-to-wishlist', (req, res) => {
     const { email, item } = req.body;

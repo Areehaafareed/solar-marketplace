@@ -235,4 +235,4 @@ const CartSingle = ({ data, quantityChangeHandler, removeFromCartHandler }) => {
   );
 };
 
-export default Cart;
+export default Cart; 
