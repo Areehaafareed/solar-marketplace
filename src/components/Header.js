@@ -116,7 +116,7 @@ const Header = ({ activeHeading }) => {
               />
               <AiOutlineSearch
                 size={30}
-                className="absolute right-6 top-1.5 cursor-pointer"
+                className="absolute right-3 top-1.5 cursor-pointer"
               />
 
               {searchData && searchData.length !== 0 ? (
@@ -135,16 +135,17 @@ const Header = ({ activeHeading }) => {
               ) : null}
             </div>
           ) : (
-            <div className="w-full flex justify-center items-center">
+            <div className="w-full flex justify-center items-center ">
               <input
                 type="text"
                 placeholder="Search Product..."
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="h-[40px] w-[50%] px-2 border-[#051d40] border-[2px] rounded-md"
+                className="h-[40px] w-[45%] px-2 border-[#051d40] border-[2px] rounded-md pr-20 "
               />
               <AiOutlineSearch size={30} className="ml-2 cursor-pointer" />
             </div>
+
           )}
 
           {!isLoggedIn && (
@@ -260,22 +261,10 @@ const Header = ({ activeHeading }) => {
             </div>
 
             <div className={`${styles.normalFlex}`}>
-              <div
-                className="relative cursor-pointer mr-[15px]"
-                onClick={handleProfileClick}
-              >
+              <div className="relative cursor-pointer mr-[15px]" onClick={handleProfileClick}>
                 <CgProfile size={30} color="rgb(255 255 255 / 83%)" />
               </div>
             </div>
-            <AiOutlineEye
-              size={22}
-              className="cursor-pointer absolute right-2 top-14"
-              onClick={() => setOpen(!open)}
-              color="white"
-              title="Quick view"
-            />
-
-            {open ? <LoginView setOpen={setOpen} /> : null}
 
             {/* cart popup */}
             {openCart ? <Cart setOpenCart={setOpenCart} /> : null}

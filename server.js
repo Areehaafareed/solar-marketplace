@@ -212,7 +212,7 @@ app.post('/vendor-login', async (req, res) => {
     }
 });
 
-// Add item to cart
+// Add item to cart or update quantity if item already exists
 app.post('/add-to-cart', (req, res) => {
     const { email, item } = req.body;
     console.log("Req.BODY: ", req.body);
@@ -222,14 +222,39 @@ app.post('/add-to-cart', (req, res) => {
         return res.status(400).json({ error: 'Email and item are required' });
     }
 
-    const insertCartItemSql = 'INSERT INTO cart_items (email, item) VALUES (?, ?)';
-    db.query(insertCartItemSql, [email, JSON.stringify(item)], (err, result) => {
+    // Check if the item already exists in the cart for the given user's email
+    const checkCartItemSql = 'SELECT * FROM cart_items WHERE email = ? AND item = ?';
+    db.query(checkCartItemSql, [email, JSON.stringify(item)], (err, rows) => {
         if (err) {
-            console.error('Error adding item to cart:', err);
-            return res.status(500).json({ error: 'Error adding item to cart' });
+            console.error('Error checking cart item:', err);
+            return res.status(500).json({ error: 'Error checking cart item' });
         }
-        console.log('Item added to cart successfully');
-        res.status(200).json({ message: 'Item added to cart successfully' });
+
+        if (rows.length > 0) {
+            // If the item already exists, update its quantity
+            const existingItem = rows[0];
+            const updatedQuantity = existingItem.qty + 1; // Update quantity as needed
+            const updateCartItemSql = 'UPDATE cart_items SET qty = ? WHERE id = ?';
+            db.query(updateCartItemSql, [updatedQuantity, existingItem.id], (err, result) => {
+                if (err) {
+                    console.error('Error updating cart item quantity:', err);
+                    return res.status(500).json({ error: 'Error updating cart item quantity' });
+                }
+                console.log('Item quantity updated successfully');
+                res.status(200).json({ message: 'Item quantity updated successfully' });
+            });
+        } else {
+            // If the item does not exist, insert it into the cart
+            const insertCartItemSql = 'INSERT INTO cart_items (email, item, qty) VALUES (?, ?, ?)';
+            db.query(insertCartItemSql, [email, JSON.stringify(item), 1], (err, result) => {
+                if (err) {
+                    console.error('Error adding item to cart:', err);
+                    return res.status(500).json({ error: 'Error adding item to cart' });
+                }
+                console.log('Item added to cart successfully');
+                res.status(200).json({ message: 'Item added to cart successfully' });
+            });
+        }
     });
 });
 
