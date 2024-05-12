@@ -7,6 +7,7 @@ import {
   AiOutlineSearch,
   AiOutlineHeart,
   AiOutlineShoppingCart,
+  AiOutlineEye,
 } from "react-icons/ai";
 import { IoIosArrowDown, IoIosArrowForward } from "react-icons/io";
 import { BiMenuAltLeft } from "react-icons/bi";
@@ -16,6 +17,7 @@ import Cart from "./Cart";
 import Wishlist from "./Wishlist";
 import { useSelector } from "react-redux";
 import { RxCross1 } from "react-icons/rx";
+import LoginView from "./LoginView";
 
 const Header = ({ activeHeading }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,7 +30,7 @@ const Header = ({ activeHeading }) => {
   const [loginDropDown, setLoginDropDown] = useState(false);
   const [open, setOpen] = useState(false);
   const { wishlist } = useSelector((state) => state.wishlist);
-  const isLoggedIn = localStorage.getItem('isLoggedIn');
+  const isLoggedIn = localStorage.getItem("isLoggedIn");
   const navigate = useNavigate();
 
   const handleSearchChange = (e) => {
@@ -64,13 +66,13 @@ const Header = ({ activeHeading }) => {
       alert("Please log in to view profile.");
     } else {
       // Navigate to profile page
-      navigate('/profile');
+      navigate("/profile");
     }
   };
 
   const LoginAndRegister = ({ isLoggedIn }) => {
     const [loginDropDown, setLoginDropDown] = useState(false);
-  }
+  };
 
   const handleLoginClick = () => {
     setLoginDropDown(!loginDropDown);
@@ -101,7 +103,7 @@ const Header = ({ activeHeading }) => {
               />
             </Link>
           </div>
-          
+
           {/* search box */}
           {!isLoggedIn ? (
             <div className="w-[50%] relative">
@@ -141,27 +143,42 @@ const Header = ({ activeHeading }) => {
                 onChange={handleSearchChange}
                 className="h-[40px] w-[50%] px-2 border-[#051d40] border-[2px] rounded-md"
               />
-              <AiOutlineSearch
-                size={30}
-                className="ml-2 cursor-pointer"
-              />
+              <AiOutlineSearch size={30} className="ml-2 cursor-pointer" />
             </div>
           )}
 
           {!isLoggedIn && (
             <div className="flex w-[170px] bg-black h-[50px] items-center justify-center rounded-xl cursor-pointer">
-              <div className="relative cursor-pointer mr-[15px]" onClick={() => setLoginDropDown(!loginDropDown)}>
+              <div
+                className="relative cursor-pointer mr-[15px]"
+                onClick={() => setLoginDropDown(!loginDropDown)}
+              >
                 <div className="text-white py-4 px-4 cursor-pointer">Login</div>
                 {loginDropDown && (
-                  <div className="absolute top-full left-0 bg-white w-36 py-2 rounded-md shadow-md z-20" onMouseLeave={() => setLoginDropDown(false)}>
-                    <Link to="/LoginPage" className="block px-2 py-2 text-black">Login as User</Link>
-                    <Link to="/vendor-login" className="block px-2 py-2 text-black">Login as Vendor</Link>
+                  <div
+                    className="absolute top-full left-0 bg-white w-36 py-2 rounded-md shadow-md z-20"
+                    onMouseLeave={() => setLoginDropDown(false)}
+                  >
+                    <Link
+                      to="/LoginPage"
+                      className="block px-2 py-2 text-black"
+                    >
+                      Login as User
+                    </Link>
+                    <Link
+                      to="/vendor-login"
+                      className="block px-2 py-2 text-black"
+                    >
+                      Login as Vendor
+                    </Link>
                   </div>
                 )}
               </div>
               <div className="relative cursor-pointer ">
                 <Link to="/Signup">
-                  <div className="text-white py-4 px-4 cursor-pointer">Register</div>
+                  <div className="text-white py-4 px-4 cursor-pointer">
+                    Register
+                  </div>
                 </Link>
               </div>
             </div>
@@ -169,95 +186,113 @@ const Header = ({ activeHeading }) => {
 
           {/* Become a vendor button */}
           {!isLoggedIn && (
-            <div className={`${styles.button} `} style={{ width: "170px", marginRight: "20px" }}>
+            <div
+              className={`${styles.button} `}
+              style={{ width: "170px", marginRight: "20px" }}
+            >
               <Link to="/vendor">
-                <h1 className="text-[#fff] flex items-center">Become a Vendor <IoIosArrowForward className="ml-1" /></h1>
+                <h1 className="text-[#fff] flex items-center">
+                  Become a Vendor <IoIosArrowForward className="ml-1" />
+                </h1>
               </Link>
             </div>
           )}
         </div>
       </div>
 
+      <div
+        className={`${
+          active === true ? "shadow-sm fixed top-0 left-0 z-10" : null
+        } transition hidden 800px:flex items-center justify-between w-full bg-[#051d40] h-[70px]`}
+      >
         <div
-          className={`${active === true ? "shadow-sm fixed top-0 left-0 z-10" : null
-            } transition hidden 800px:flex items-center justify-between w-full bg-[#051d40] h-[70px]`}
+          className={`${styles.section} relative ${styles.normalFlex} justify-between`}
         >
-          <div
-            className={`${styles.section} relative ${styles.normalFlex} justify-between`}
-          >
-            {/* categories */}
-            <div>
-              <div className="relative h-[60px] mt-[10px] w-[270px] hidden 1000px:block">
-                <BiMenuAltLeft size={30} className="absolute top-3 left-2" />
-                <button
-                  className={`h-[100%] w-full flex justify-between items-center pl-10 bg-white font-sans text-lg font-[500] select-none rounded-t-md`}
-                >
-                  All Categories
-                </button>
+          {/* categories */}
+          <div>
+            <div className="relative h-[60px] mt-[10px] w-[270px] hidden 1000px:block">
+              <BiMenuAltLeft size={30} className="absolute top-3 left-2" />
+              <button
+                className={`h-[100%] w-full flex justify-between items-center pl-10 bg-white font-sans text-lg font-[500] select-none rounded-t-md`}
+              >
+                All Categories
+              </button>
 
-                <IoIosArrowDown
-                  size={20}
-                  className="absolute right-2 top-4 cursor-pointer"
-                  onClick={() => setDropDown(!dropDown)}
-                />
-              </div>
-            </div>
-
-            {/* navigation items */}
-            <div className={`${styles.normalFlex}`}>
-              <Navbar active={activeHeading} />
-            </div>
-
-            <div className="flex">
-              <div className={`${styles.normalFlex}`}>
-                <div
-                  className="relative cursor-pointer mr-[15px]"
-                  onClick={() => setOpenWishlist(true)}
-                >
-                  <AiOutlineHeart size={30} color="rgb(255 255 255 / 83%)" />
-                  <span className="absolute right-0 top-0 rounded-full bg-[#FFA500] w-4 h-4 top right p-0 m-0 text-white font-mono text-[12px] leading-tight text-center">
-                    {wishlist && wishlist.length}
-                  </span>
-                </div>
-              </div>
-
-              <div className={`${styles.normalFlex}`}>
-                <div
-                  className="relative cursor-pointer mr-[15px]"
-                  onClick={handleCartClick}
-                >
-                  <AiOutlineShoppingCart
-                    size={30}
-                    color="rgb(255 255 255 / 83%)"
-                  />
-                  <span className="absolute right-0 top-0 rounded-full bg-[#FFA500] w-4 h-4 top right p-0 m-0 text-white font-mono text-[12px] leading-tight text-center">
-                    {cart && cart.length}
-                  </span>
-
-                </div>
-              </div>
-
-              <div className={`${styles.normalFlex}`}>
-                <div className="relative cursor-pointer mr-[15px]" onClick={handleProfileClick}>
-                  <CgProfile size={30} color="rgb(255 255 255 / 83%)" />
-                </div>
-              </div>
-
-              {/* cart popup */}
-              {openCart ? <Cart setOpenCart={setOpenCart} /> : null}
-
-              {/* wishlist popup */}
-              {openWishlist ? (
-                <Wishlist setOpenWishlist={setOpenWishlist} />
-              ) : null}
+              <IoIosArrowDown
+                size={20}
+                className="absolute right-2 top-4 cursor-pointer"
+                onClick={() => setDropDown(!dropDown)}
+              />
             </div>
           </div>
+
+          {/* navigation items */}
+          <div className={`${styles.normalFlex}`}>
+            <Navbar active={activeHeading} />
+          </div>
+
+          <div className="flex">
+            <div className={`${styles.normalFlex}`}>
+              <div
+                className="relative cursor-pointer mr-[15px]"
+                onClick={() => setOpenWishlist(true)}
+              >
+                <AiOutlineHeart size={30} color="rgb(255 255 255 / 83%)" />
+                <span className="absolute right-0 top-0 rounded-full bg-[#FFA500] w-4 h-4 top right p-0 m-0 text-white font-mono text-[12px] leading-tight text-center">
+                  {wishlist && wishlist.length}
+                </span>
+              </div>
+            </div>
+
+            <div className={`${styles.normalFlex}`}>
+              <div
+                className="relative cursor-pointer mr-[15px]"
+                onClick={handleCartClick}
+              >
+                <AiOutlineShoppingCart
+                  size={30}
+                  color="rgb(255 255 255 / 83%)"
+                />
+                <span className="absolute right-0 top-0 rounded-full bg-[#FFA500] w-4 h-4 top right p-0 m-0 text-white font-mono text-[12px] leading-tight text-center">
+                  {cart && cart.length}
+                </span>
+              </div>
+            </div>
+
+            <div className={`${styles.normalFlex}`}>
+              <div
+                className="relative cursor-pointer mr-[15px]"
+                onClick={handleProfileClick}
+              >
+                <CgProfile size={30} color="rgb(255 255 255 / 83%)" />
+              </div>
+            </div>
+            <AiOutlineEye
+              size={22}
+              className="cursor-pointer absolute right-2 top-14"
+              onClick={() => setOpen(!open)}
+              color="white"
+              title="Quick view"
+            />
+
+            {open ? <LoginView setOpen={setOpen} /> : null}
+
+            {/* cart popup */}
+            {openCart ? <Cart setOpenCart={setOpenCart} /> : null}
+
+            {/* wishlist popup */}
+            {openWishlist ? (
+              <Wishlist setOpenWishlist={setOpenWishlist} />
+            ) : null}
+          </div>
         </div>
+      </div>
 
       {/* mobile header */}
       <div
-        className={`${active === true ? "shadow-sm fixed top-0 left-0 z-10" : null
-          } w-full h-[70px] bg-[#fff]  z-50 top-0 left-0 shadow-sm 800px:hidden`}
+        className={`${
+          active === true ? "shadow-sm fixed top-0 left-0 z-10" : null
+        } w-full h-[70px] bg-[#fff]  z-50 top-0 left-0 shadow-sm 800px:hidden`}
       >
         <div className="w-full flex items-center justify-between">
           <div>
@@ -343,9 +378,14 @@ const Header = ({ activeHeading }) => {
 
               {/* Become a vendor button */}
               {!isLoggedIn && (
-                <div className={`${styles.button} ml-4 !rounded-[4px]`} style={{ width: "170px", marginRight: "20px" }}>
+                <div
+                  className={`${styles.button} ml-4 !rounded-[4px]`}
+                  style={{ width: "170px", marginRight: "20px" }}
+                >
                   <Link to="/vendor">
-                    <h1 className="text-[#fff] flex items-center">Become a Vendor <IoIosArrowForward className="ml-1" /></h1>
+                    <h1 className="text-[#fff] flex items-center">
+                      Become a Vendor <IoIosArrowForward className="ml-1" />
+                    </h1>
                   </Link>
                 </div>
               )}
