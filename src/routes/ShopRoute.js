@@ -4,6 +4,7 @@ import ShopAllProducts from "../screens/Shop/ShopAllProducts";
 import ShopAllCoupons from "../screens/Shop/ShopAllCoupons";
 import ShopAllOrders from "../screens/Shop/ShopAllOrders";
 import ShopAllOrderDetails from "../screens/Shop/ShopAllOrderDetails";
+import ShopAllRefunds from "../components/shop/ShopAllRefunds";
 
 export {
   ShopDashboardPage,
@@ -12,4 +13,5 @@ export {
   ShopAllCoupons,
   ShopAllOrders,
   ShopAllOrderDetails,
+  ShopAllRefunds,
 };

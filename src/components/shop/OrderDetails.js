@@ -91,7 +91,9 @@ const OrderDetails = () => {
       <br />
       <br />
       <h4 className="pt-3 text-[20px] font-[600]">Order Status:</h4>
-      <select
+      
+      {data?.orderStatus !== "Processing refund" &&  data?.orderStatus !== "Refund Success" (
+        <select
         value={status}
         onChange={(e) => setStatus(e.target.value)}
         className="w-[200px] mt-2 border h-[35px] rounded-[5px]"
@@ -112,7 +114,7 @@ const OrderDetails = () => {
               "Received",
               "On the way",
               "Delivered",
-            ].indexOf(data?.status)
+            ].indexOf(data?.orderStatus)
           )
           .map((option, index) => (
             <option value={option} key={index}>
@@ -121,9 +123,30 @@ const OrderDetails = () => {
           ))}
       </select>
 
+      )}
+    <select  value={status}
+        onChange={(e) => setStatus(e.target.value)}
+        className="w-[200px] mt-2 border h-[35px] rounded-[5px]">
+ {[
+          "Processing refund",
+          "Refund Success",
+        ]
+          .slice(
+            [
+              "Processing refund",
+          "Refund Success",
+            ].indexOf(data?.orderStatus)
+          )
+          .map((option, index) => (
+            <option value={option} key={index}>
+              {option}
+            </option>
+          ))}
+    </select>
+
       <div
         className={`${styles.button} mt-5 !bg-[#FCE1E6] !rounded-[4px] text-[#E94560] font-[600] !h-[45px] text-[18px]`}
-        onClick={orderUpdateHandler}
+        onClick={data?.orderStatus !== "Processing refund" ? orderUpdateHandler : refundOrderUpdateHandler}
       >
         Update Status
       </div>

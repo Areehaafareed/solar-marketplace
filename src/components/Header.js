@@ -7,6 +7,7 @@ import {
   AiOutlineSearch,
   AiOutlineHeart,
   AiOutlineShoppingCart,
+  AiOutlineEye,
 } from "react-icons/ai";
 import { IoIosArrowDown, IoIosArrowForward } from "react-icons/io";
 import { BiMenuAltLeft } from "react-icons/bi";
@@ -16,6 +17,7 @@ import Cart from "./Cart";
 import Wishlist from "./Wishlist";
 import { useSelector } from "react-redux";
 import { RxCross1 } from "react-icons/rx";
+import LoginView from "./LoginView";
 
 const Header = ({ activeHeading }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -26,9 +28,13 @@ const Header = ({ activeHeading }) => {
   const [openWishlist, setOpenWishlist] = useState(false);
   const [openCart, setOpenCart] = useState(false);
   const [loginDropDown, setLoginDropDown] = useState(false);
+  const [openLogin, setOpenLogin] = useState(false);
+
+  
   const [open, setOpen] = useState(false);
   const { wishlist } = useSelector((state) => state.wishlist);
-  const isLoggedIn = localStorage.getItem('isLoggedIn');
+  const isLoggedIn = localStorage.getItem("isLoggedIn");
+
   const navigate = useNavigate();
 
   const handleSearchChange = (e) => {
@@ -41,6 +47,9 @@ const Header = ({ activeHeading }) => {
         product.name.toLowerCase().includes(term.toLowerCase())
       );
     setSearchData(filteredProducts);
+  };
+  const handleLogin = () => {
+    setOpenLogin(!openLogin);
   };
 
   useEffect(() => {
@@ -64,13 +73,13 @@ const Header = ({ activeHeading }) => {
       alert("Please log in to view profile.");
     } else {
       // Navigate to profile page
-      navigate('/profile');
+      navigate("/profile");
     }
   };
 
   const LoginAndRegister = ({ isLoggedIn }) => {
     const [loginDropDown, setLoginDropDown] = useState(false);
-  }
+  };
 
   const handleLoginClick = () => {
     setLoginDropDown(!loginDropDown);
@@ -141,29 +150,43 @@ const Header = ({ activeHeading }) => {
                 onChange={handleSearchChange}
                 className="h-[40px] w-[45%] px-2 border-[#051d40] border-[2px] rounded-md pr-20 "
               />
-              <AiOutlineSearch
-                size={25}
-                className="absolute right-80 cursor-pointer"
-                style={{ marginBottom: "10px" }}
-              />
+              <AiOutlineSearch size={30} className="ml-2 cursor-pointer" />
             </div>
 
           )}
 
           {!isLoggedIn && (
             <div className="flex w-[170px] bg-black h-[50px] items-center justify-center rounded-xl cursor-pointer">
-              <div className="relative cursor-pointer mr-[15px]" onClick={() => setLoginDropDown(!loginDropDown)}>
+              <div
+                className="relative cursor-pointer mr-[15px]"
+                onClick={() => setLoginDropDown(!loginDropDown)}
+              >
                 <div className="text-white py-4 px-4 cursor-pointer">Login</div>
                 {loginDropDown && (
-                  <div className="absolute top-full left-0 bg-white w-36 py-2 rounded-md shadow-md z-20" onMouseLeave={() => setLoginDropDown(false)}>
-                    <Link to="/LoginPage" className="block px-2 py-2 text-black">Login as User</Link>
-                    <Link to="/vendor-login" className="block px-2 py-2 text-black">Login as Vendor</Link>
+                  <div
+                    className="absolute top-full left-0 bg-white w-36 py-2 rounded-md shadow-md z-20"
+                    onMouseLeave={() => setLoginDropDown(false)}
+                  >
+                    <Link
+                      to="/LoginPage"
+                      className="block px-2 py-2 text-black"
+                    >
+                      Login as User
+                    </Link>
+                    <Link
+                      to="/vendor-login"
+                      className="block px-2 py-2 text-black"
+                    >
+                      Login as Vendor
+                    </Link>
                   </div>
                 )}
               </div>
               <div className="relative cursor-pointer ">
                 <Link to="/Signup">
-                  <div className="text-white py-4 px-4 cursor-pointer">Register</div>
+                  <div className="text-white py-4 px-4 cursor-pointer">
+                    Register
+                  </div>
                 </Link>
               </div>
             </div>
@@ -171,9 +194,14 @@ const Header = ({ activeHeading }) => {
 
           {/* Become a vendor button */}
           {!isLoggedIn && (
-            <div className={`${styles.button} `} style={{ width: "170px", marginRight: "20px" }}>
+            <div
+              className={`${styles.button} `}
+              style={{ width: "170px", marginRight: "20px" }}
+            >
               <Link to="/vendor">
-                <h1 className="text-[#fff] flex items-center">Become a Vendor <IoIosArrowForward className="ml-1" /></h1>
+                <h1 className="text-[#fff] flex items-center">
+                  Become a Vendor <IoIosArrowForward className="ml-1" />
+                </h1>
               </Link>
             </div>
           )}
@@ -235,7 +263,6 @@ const Header = ({ activeHeading }) => {
                 <span className="absolute right-0 top-0 rounded-full bg-[#FFA500] w-4 h-4 top right p-0 m-0 text-white font-mono text-[12px] leading-tight text-center">
                   {cart && cart.length}
                 </span>
-
               </div>
             </div>
 
@@ -244,6 +271,19 @@ const Header = ({ activeHeading }) => {
                 <CgProfile size={30} color="rgb(255 255 255 / 83%)" />
               </div>
             </div>
+            <div className={`${styles.normalFlex}`}>
+              <div className="relative cursor-pointer mr-[15px]" onClick={handleLogin}>
+                <AiOutlineEye
+                  size={22}
+                 
+                  color="rgb(255 255 255 / 83%)"
+                  title="Quick view"
+                />
+              </div>
+               {/* Render the login view if openLogin is true */}
+      {openLogin && <LoginView setOpen={setOpenLogin} />}
+            </div>
+
 
             {/* cart popup */}
             {openCart ? <Cart setOpenCart={setOpenCart} /> : null}
@@ -345,9 +385,14 @@ const Header = ({ activeHeading }) => {
 
               {/* Become a vendor button */}
               {!isLoggedIn && (
-                <div className={`${styles.button} ml-4 !rounded-[4px]`} style={{ width: "170px", marginRight: "20px" }}>
+                <div
+                  className={`${styles.button} ml-4 !rounded-[4px]`}
+                  style={{ width: "170px", marginRight: "20px" }}
+                >
                   <Link to="/vendor">
-                    <h1 className="text-[#fff] flex items-center">Become a Vendor <IoIosArrowForward className="ml-1" /></h1>
+                    <h1 className="text-[#fff] flex items-center">
+                      Become a Vendor <IoIosArrowForward className="ml-1" />
+                    </h1>
                   </Link>
                 </div>
               )}

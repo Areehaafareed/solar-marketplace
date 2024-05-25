@@ -14,6 +14,7 @@ import PaymentPage from "../screens/PaymentPage.js";
 import OrderSuccessPage from "../screens/OrderSuccessPage.js";
 import SolarDetailsPage from "../screens/SolarDetailsPage.js";
 import OrderDetailsPage from "../screens/OrderDetailsPage.js";
+import TrackOrderPage from "../screens/TrackOrderPage.js";
 
 export {
   LoginPage,
@@ -31,5 +32,6 @@ export {
   ProductDetailsPage,
   ProfilePage,
   OrderDetailsPage,
+  TrackOrderPage,
   OrderSuccessPage,
 };
