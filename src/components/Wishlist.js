@@ -8,20 +8,70 @@ import { AiOutlineHeart } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
 import { removeFromWishlist } from "../redux/actions/wishlist";
 import { addTocart } from "../redux/actions/cart";
+import { toast } from "react-toastify";
+import { backendURL } from "../config";
+
+const isLoggedIn = localStorage.getItem('isLoggedIn');
 
 const Wishlist = ({ setOpenWishlist }) => {
   const { wishlist } = useSelector((state) => state.wishlist);
+  const { cartItems } = useSelector((state) => state.cart); // Assuming the cart items are stored in the Redux store under cartItems
   const dispatch = useDispatch();
 
   const removeFromWishlistHandler = (data) => {
     dispatch(removeFromWishlist(data));
   };
 
-  const addToCartHandler = (data) => {
-    const newData = { ...data, qty: 1 };
-    dispatch(addTocart(newData));
-    setOpenWishlist(false);
-    console.log(data);
+  const addToCartHandler = async (data) => {
+    if (!isLoggedIn) {
+      // If user is not logged in, show prompt to login
+      toast.error("Please log in to add items to your cart.");
+      return; // Prevent adding to cart if user is not logged in
+    }
+
+    // Check if the item is already in the cart
+    const isItemExists = cartItems.some((item) => item.id === data.id);
+
+    if (isItemExists) {
+      toast.error("Item already in cart!");
+    } else {
+      if (data.stock < 1) {
+        toast.error("Product stock limited!");
+      } else {
+        const cartData = { ...data };
+        let email = window.localStorage.getItem("email");
+        try {
+          // Construct the URL for adding to cart
+          const addToCartURL = `${backendURL}/add-to-cart`;
+
+          // Send cart item data to the backend
+          const response = await fetch(addToCartURL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              // Include any necessary authentication tokens or headers here
+            },
+            body: JSON.stringify({ item: cartData, email }),
+          });
+
+          // Check if request was successful
+          if (response.ok) {
+            // Dispatch action to add item to Redux store
+            dispatch(addTocart(cartData));
+
+            toast.success("Item added to cart successfully!");
+          } else {
+            // Handle error response from backend
+            const errorMessage = await response.text();
+            toast.error(`Error: ${errorMessage}`);
+          }
+        } catch (error) {
+          // Handle network errors or exceptions
+          console.error("Error adding to cart:", error);
+          toast.error("Error adding to cart. Please try again later.");
+        }
+      }
+    }
   };
 
   return (
@@ -58,17 +108,18 @@ const Wishlist = ({ setOpenWishlist }) => {
 
               {/* cart Single Items */}
               <br />
-              <div className="w-full border-t">
-                {wishlist &&
-                  wishlist.map((i, index) => (
-                    <CartSingle
-                      key={index}
-                      data={i}
-                      removeFromWishlistHandler={removeFromWishlistHandler}
-                      addToCartHandler={addToCartHandler}
-                    />
-                  ))}
-              </div>
+                <div className="w-full border-t">
+                  {wishlist &&
+                    wishlist.map((i, index) => (
+                      <CartSingle
+                        key={index}
+                        data={i}
+                        removeFromWishlistHandler={removeFromWishlistHandler}
+                        addToCartHandler={addToCartHandler}
+                        cart={cartItems} // Pass the cartItems prop down to CartSingle as cart
+                      />
+                    ))}
+                </div>
             </div>
           </>
         )}
@@ -77,7 +128,7 @@ const Wishlist = ({ setOpenWishlist }) => {
   );
 };
 
-const CartSingle = ({ data, removeFromWishlistHandler, addToCartHandler }) => {
+const CartSingle = ({ data, removeFromWishlistHandler, addToCartHandler, cart }) => {
   const [value, setValue] = useState(1);
   const totalPrice = data.discount_price * value;
   return (
@@ -104,8 +155,8 @@ const CartSingle = ({ data, removeFromWishlistHandler, addToCartHandler }) => {
           <BsCartPlus
             size={20}
             className="cursor-pointer ml-5"
-            tile="Add to cart"
-            onClick={() => addToCartHandler(data)}
+            title="Add to cart"
+            onClick={() => addToCartHandler(data, cart)}
           />
         </div>
       </div>

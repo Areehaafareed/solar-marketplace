@@ -76,9 +76,9 @@ const ProductCard = ({ data }) => {
       if (data.stock < 1) {
         toast.error("Product stock limited!");
       } else {
-        const cartData = { ...data, qty: 1 };
+        const cartData = { ...data };
         let email = window.localStorage.getItem("email")
-        console.log("IDHRRR",cartData)
+        console.log("IDHRRR", cartData)
         try {
           // Construct the URL for adding to cart
           const addToCartURL = `${backendURL}/add-to-cart`;

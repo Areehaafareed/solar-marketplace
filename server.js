@@ -35,8 +35,19 @@ const licensePictureStorage = multer.diskStorage({
     }
 });
 
+const productsPicturesStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './uploads/products-pictures/');
+    },
+    filename: function (req, file, cb) {
+        // Keep the original file name for products pictures
+        cb(null, file.originalname);
+    }
+});
+
 const uploadProfilePicture = multer({ storage: profilePictureStorage, limits: { fieldSize: 25 * 1024 * 1024 } });
 const uploadLicensePicture = multer({ storage: licensePictureStorage, limits: { fieldSize: 25 * 1024 * 1024 } });
+const uploadProductsPictures = multer({ storage: productsPicturesStorage, limits: { fieldSize: 25 * 1024 * 1024 } });
 
 // Database connection
 const db = mysql.createConnection({
@@ -384,16 +395,20 @@ app.post('/change-password', async (req, res) => {
 });
 
 // Route to create a new product
-app.post('/create-product', async (req, res) => {
-    const { name, description, category, tags, originalPrice, discountedPrice, stock, images, vendorEmail } = req.body;
+app.post('/create-product', uploadProductsPictures.array('productPictures', 5), async (req, res) => {
+    const { name, description, category, tags, originalPrice, discountedPrice, stock, vendorEmail, vendorName } = req.body;
+    const productPictures = req.files.map(file => file.path); // Get paths of uploaded product pictures
+
+    // Log the received data
+    console.log("Received data:", req.body);
 
     try {
-        // Insert the product data into the database
+        // Insert the product data into the database, including product pictures paths
         const insertProductSql = `
-            INSERT INTO products (name, description, category, tags, original_price, discounted_price, stock, images, vendor_email)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO products (name, description, category, tags, original_price, discounted_price, stock, vendor_email, vendor_name, images)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        await db.promise().query(insertProductSql, [name, description, category, tags, originalPrice, discountedPrice, stock, images, vendorEmail]);
+        await db.promise().query(insertProductSql, [name, description, category, tags, originalPrice, discountedPrice, stock, vendorEmail, vendorName, JSON.stringify(productPictures)]);
 
         // Send success response
         res.status(201).json({ message: 'Product created successfully' });

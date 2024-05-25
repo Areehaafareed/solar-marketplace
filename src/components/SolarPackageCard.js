@@ -45,7 +45,7 @@ const SolarPackageCard = ({ data }) => {
       if (data.stock < 1) {
         toast.error("Product stock limited!");
       } else {
-        const cartData = { ...data, qty: 1 };
+        const cartData = { ...data };
         dispatch(addTocart(cartData));
         toast.success("Item added to cart successfully!");
       }

@@ -54,26 +54,28 @@ const ProductDetailsCard = ({ setOpen, data }) => {
       if (data.stock < 1) {
         toast.error("Product stock limited!");
       } else {
-        const cartData = { ...data, qty: 1, email: localStorage.getItem('userEmail') }; // Include logged-in email in the request payload
-
+        const cartData = { ...data };
+        let email = window.localStorage.getItem("email")
+        console.log("IDHRRR", cartData)
         try {
           // Construct the URL for adding to cart
           const addToCartURL = `${backendURL}/add-to-cart`;
 
           // Send cart item data to the backend
           const response = await fetch(addToCartURL, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
               // Include any necessary authentication tokens or headers here
             },
-            body: JSON.stringify(cartData),
+            body: JSON.stringify({ item: cartData, email }),
           });
 
           // Check if request was successful
           if (response.ok) {
             // Dispatch action to add item to Redux store
             dispatch(addTocart(cartData));
+
             toast.success("Item added to cart successfully!");
           } else {
             // Handle error response from backend
@@ -82,12 +84,13 @@ const ProductDetailsCard = ({ setOpen, data }) => {
           }
         } catch (error) {
           // Handle network errors or exceptions
-          console.error('Error adding to cart:', error);
-          toast.error('Error adding to cart. Please try again later.');
+          console.error("Error adding to cart:", error);
+          toast.error("Error adding to cart. Please try again later.");
         }
       }
     }
   };
+
 
   useEffect(() => {
     if (wishlist && wishlist.find((i) => i.id === data.id)) {

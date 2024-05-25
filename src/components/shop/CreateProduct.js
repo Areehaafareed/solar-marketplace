@@ -5,6 +5,7 @@ import { categoriesData } from "../../static/data";
 import { AiOutlinePlusCircle } from "react-icons/ai";
 import { createProduct } from "../../redux/actions/product";
 import { toast } from "react-toastify";
+import { backendURL } from "../../config";
 
 const CreateProduct = () => {
     const { seller } = useSelector((state) => state.seller);
@@ -49,8 +50,12 @@ const CreateProduct = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Fetch vendor data from localStorage
+        const vendorEmail = localStorage.getItem('vendorEmail');
+        const vendorName = localStorage.getItem('vendorCompany');
 
         // Create a new FormData object to store form data
         const formData = new FormData();
@@ -61,21 +66,44 @@ const CreateProduct = () => {
         formData.append("category", category);
         formData.append("tags", tags);
         formData.append("originalPrice", originalPrice);
+        formData.append("discountPrice", discountPrice);
         formData.append("stock", stock);
-        formData.append("shopId", seller.id);
-
-        // Append optional fields only if they are not empty
-        if (discountPrice) {
-            formData.append("discountPrice", discountPrice);
-        }
+        formData.append("vendorEmail", vendorEmail);
+        formData.append("vendorName", vendorName);
 
         // Append images to FormData object
         images.forEach((image, index) => {
             formData.append(`image${index}`, image);
         });
 
-        // Dispatch the createProduct action with FormData object
-        dispatch(createProduct(formData));
+        // Log the form data before sending the request
+        console.log("Form Data: ", formData);
+        
+        const createProductUrl = `${backendURL}/create-product`;
+
+
+        try {
+            const response = await fetch(createProductUrl, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                toast.success("Product created successfully!");
+                navigate("/dashboard");
+                window.location.reload();
+            } else {
+                const data = await response.json();
+                if (data && data.error) {
+                    toast.error(data.error);
+                } else {
+                    toast.error("Failed to create product.");
+                }
+            }
+        } catch (error) {
+            console.error("Error creating product:", error);
+            toast.error("Failed to create product.");
+        }
     };
 
     return (
