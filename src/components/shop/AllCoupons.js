@@ -124,12 +124,12 @@ const AllCoupons = () => {
                             <div className="w-[90%] 800px:w-[40%] h-[80vh] bg-white rounded-md shadow p-4">
                                 <div className="w-full flex justify-end">
                                     <RxCross1
-                                        size={30}
+                                        size={26}
                                         className="cursor-pointer"
                                         onClick={() => setOpen(false)}
                                     />
                                 </div>
-                                <h5 className="text-[30px] font-Poppins text-center">
+                                <h5 className="text-[27px] font-Poppins text-center">
                                     Create Coupon code
                                 </h5>
                                 {/*  {/* create coupon code */}

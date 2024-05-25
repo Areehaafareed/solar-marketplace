@@ -17,39 +17,41 @@ const DashboardHeader = () => {
             src={logo5}
             alt="logo"
             style={{
-              height: "100px",
-              width: "150px",
+              height: "80px",
+              width: "120px",
             }}
           />
         </Link>
       </div>
       <div className="flex items-center">
         <div className="flex items-center mr-4">
-          <Link to="/dashboard/coupons" className="800px:block hidden">
+          <Link to="/dashboard/coupons" className="800px:block hidden"  title="coupons">
             <AiOutlineGift
               color="#555"
-              size={30}
+              size={26}
               className="mx-5 cursor-pointer"
             />
           </Link>
-          <Link to="/dashboard-products" className="800px:block hidden">
-            <FiShoppingBag
+          <Link to="/dashboard-products" className="800px:block hidden"  title="products">
+          <FiPackage color="#555" size={30} className="mx-5 cursor-pointer" />
+          </Link>
+          <Link to="/dashboard-orders" className="800px:block hidden" title="orders">
+          <FiShoppingBag
               color="#555"
-              size={30}
+              size={26}
               className="mx-5 cursor-pointer"
             />
+            
           </Link>
-          <Link to="/dashboard-orders" className="800px:block hidden">
-            <FiPackage color="#555" size={30} className="mx-5 cursor-pointer" />
-          </Link>
-          <Link to="/dashboard-messages" className="800px:block hidden">
+          <Link to="/dashboard-messages" className="800px:block hidden" title="Message">
             <BiMessageSquareDetail
               color="#555"
-              size={30}
+              size={26}
               className="mx-5 cursor-pointer"
+
             />
           </Link>
-          <Link to={`/vendor/${seller.id}`}>
+          <Link to={`/vendor/${seller.id}`}  title="Profile">
             <img
               src="../../../Assets/hub.jpg"
               className="w-[50px] h-[50px] rounded-full object-cover"

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/SignupPage.css"; // Create a new CSS file for SignupPage styles
-import logo5 from "../logo5.png";
+import logo5 from "../logo6.png";
 import logincover from "../cover2.jpg";
 import { backendURL } from "../config";
 
@@ -73,20 +73,17 @@ const SignupPage = () => {
             src={logo5}
             alt="Energy Matrix Logo"
             style={{
-              height: "100px",
-              width: "150px",
-              marginTop: "90px",
+              height: "70px",
+              width: "110px",
+              marginTop:"0px",
+             
             }}
           />
         </Link>
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className=" text-center text-4xl font-semibold text-white">
+        <h2 className=" text-center text-3xl font-semibold text-white">
             Welcome to <span style={{ color: "orange" }}>Energy Matrix!</span>
           </h2>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
-            Create your account
-          </h2>
-        </div>
+
         <div
           style={{
             display: "flex",
@@ -95,6 +92,10 @@ const SignupPage = () => {
           }}
         >
           <div className="signup-container">
+          <h4 className=" text-center text-2xl font-bold text-black">
+            Create your account
+          </h4>
+            
             <form onSubmit={handleSignup}>
               <label>Full Name:</label>
               <input
@@ -136,7 +137,7 @@ const SignupPage = () => {
               <div
                 style={{
                   display: "flex",
-                  marginTop: "20px",
+                  marginTop: "10px",
                 }}
               >
                 <h4 style={{ marginRight: "8px" }}>Already have an account?</h4>

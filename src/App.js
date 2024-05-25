@@ -34,6 +34,7 @@ import {
   ShopAllCoupons,
   ShopAllOrderDetails,
   ShopAllOrders,
+  ShopAllRefunds,
 } from "./routes/ShopRoute.js";
 import SellerProtectedRoute from "./routes/sellerProtectedRoute.js";
 import { useDispatch, useSelector } from "react-redux";
@@ -120,6 +121,8 @@ const App = () => {
             }
           />
 
+          {/* Shop routes */}
+
           <Route
             path="/dashboard"
             element={
@@ -133,6 +136,14 @@ const App = () => {
             element={
               <SellerProtectedRoute>
                 <ShopAllOrders />
+              </SellerProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard-refunds"
+            element={
+              <SellerProtectedRoute>
+                <ShopAllRefunds />
               </SellerProtectedRoute>
             }
           />

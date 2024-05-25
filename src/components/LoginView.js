@@ -3,13 +3,16 @@ import { RxCross1 } from "react-icons/rx";
 import logo5 from "../logo5.png";
 import { Link, useNavigate } from "react-router-dom";
 import { backendURL } from "../config";
-import SignupView from "./SignupView";
+
 
 const LoginView = ({ setOpen, data }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate(); // Get navigate object
-  const [showSignup, setShowSignup] = useState(false);
+
+  const handleClose = () => {
+    setOpen(false); // Close the LoginView modal
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault(); // Prevent default form submission
@@ -54,21 +57,15 @@ const LoginView = ({ setOpen, data }) => {
     }
   };
 
-  const handleClose = () => {
-    if (showSignup) {
-      setShowSignup(false); // Close the SignupView only if it is open
-    } else {
-      setOpen(false); // Close the LoginView only if SignupView is not open
-    }
-  };
+
 
   return (
     <div className="bg-[#fff]">
       <div className="fixed w-full h-screen top-0 left-0 bg-[#00000030] z-40 flex items-center justify-center">
-        <div className="w-[40%] 800px:w-[40%] h-[80vh] overflow-y-scroll 800px:h-[55vh] bg-white rounded-md shadow-sm relative p-4">
+        <div className="w-[40%] 800px:w-[35%] h-[80vh] overflow-y-scroll 800px:h-[55vh] bg-white rounded-md shadow-sm relative p-4">
           <RxCross1
             size={25}
-            className="absolute right-3 top-3 z-50"
+            className="absolute cursor-pointer right-3 top-3 z-50"
             onClick={handleClose} // Modified onClick handler
           />
           <div className="block w-full 800px:flex">
@@ -76,7 +73,7 @@ const LoginView = ({ setOpen, data }) => {
               <h2 className="text-2xl font-bold text-Black">
                 Login to your account
               </h2>
-              <div className="w-[70%] mt-2 pl-5">
+              <div className="w-[90%] mt-2 pl-5">
                 <form onSubmit={handleLogin}>
                   <label>Email:</label>
                   <input
@@ -99,12 +96,9 @@ const LoginView = ({ setOpen, data }) => {
                     <h4 style={{ marginRight: "8px", marginTop: "20px" }}>
                       Don't have any account?
                     </h4>
-                    <button
-                      className="text-blue-600 mt-5"
-                      onClick={() => setShowSignup(true)}
-                    >
+                    <Link to="/signup" className="text-blue-600 mt-5">
                       Sign Up
-                    </button>
+                    </Link>
                   </div>
                 </form>
               </div>
@@ -112,11 +106,7 @@ const LoginView = ({ setOpen, data }) => {
           </div>
         </div>
       </div>
-      {showSignup && (
-        <div className="fixed top-0 left-0 w-full h-screen bg-[#00000030] z-50 flex items-center justify-center">
-          <SignupView setOpen={setShowSignup} />
-        </div>
-      )}
+
     </div>
   );
 };

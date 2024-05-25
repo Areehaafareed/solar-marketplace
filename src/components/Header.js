@@ -28,9 +28,13 @@ const Header = ({ activeHeading }) => {
   const [openWishlist, setOpenWishlist] = useState(false);
   const [openCart, setOpenCart] = useState(false);
   const [loginDropDown, setLoginDropDown] = useState(false);
+  const [openLogin, setOpenLogin] = useState(false);
+
+  
   const [open, setOpen] = useState(false);
   const { wishlist } = useSelector((state) => state.wishlist);
   const isLoggedIn = localStorage.getItem("isLoggedIn");
+
   const navigate = useNavigate();
 
   const handleSearchChange = (e) => {
@@ -43,6 +47,9 @@ const Header = ({ activeHeading }) => {
         product.name.toLowerCase().includes(term.toLowerCase())
       );
     setSearchData(filteredProducts);
+  };
+  const handleLogin = () => {
+    setOpenLogin(!openLogin);
   };
 
   useEffect(() => {
@@ -202,9 +209,8 @@ const Header = ({ activeHeading }) => {
       </div>
 
       <div
-        className={`${
-          active === true ? "shadow-sm fixed top-0 left-0 z-10" : null
-        } transition hidden 800px:flex items-center justify-between w-full bg-[#051d40] h-[70px]`}
+        className={`${active === true ? "shadow-sm fixed top-0 left-0 z-10" : null
+          } transition hidden 800px:flex items-center justify-between w-full bg-[#051d40] h-[70px]`}
       >
         <div
           className={`${styles.section} relative ${styles.normalFlex} justify-between`}
@@ -265,6 +271,19 @@ const Header = ({ activeHeading }) => {
                 <CgProfile size={30} color="rgb(255 255 255 / 83%)" />
               </div>
             </div>
+            <div className={`${styles.normalFlex}`}>
+              <div className="relative cursor-pointer mr-[15px]" onClick={handleLogin}>
+                <AiOutlineEye
+                  size={22}
+                 
+                  color="rgb(255 255 255 / 83%)"
+                  title="Quick view"
+                />
+              </div>
+               {/* Render the login view if openLogin is true */}
+      {openLogin && <LoginView setOpen={setOpenLogin} />}
+            </div>
+
 
             {/* cart popup */}
             {openCart ? <Cart setOpenCart={setOpenCart} /> : null}
@@ -279,9 +298,8 @@ const Header = ({ activeHeading }) => {
 
       {/* mobile header */}
       <div
-        className={`${
-          active === true ? "shadow-sm fixed top-0 left-0 z-10" : null
-        } w-full h-[70px] bg-[#fff]  z-50 top-0 left-0 shadow-sm 800px:hidden`}
+        className={`${active === true ? "shadow-sm fixed top-0 left-0 z-10" : null
+          } w-full h-[70px] bg-[#fff]  z-50 top-0 left-0 shadow-sm 800px:hidden`}
       >
         <div className="w-full flex items-center justify-between">
           <div>
