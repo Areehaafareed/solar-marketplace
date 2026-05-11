@@ -1,0 +1,95 @@
+
+.testimonial-container {
+    text-align: center;
+    /* background-color: #e7e7e7; */
+    padding: 20px;
+  }
+  
+  .carousel-text {
+    font-size: 18px;
+    color: #000;
+  }
+  
+ 
+  .review-card {
+    flex: 0 0 auto;
+    width: 400px; /* Adjust the width based on your design */
+    background-color: rgba(255, 255, 255, 0.7); 
+    padding: 20px;
+    margin: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.5s ease-in-out;
+  }
+  
+  .review-card:first-child {
+    margin-left: 0;
+  }
+  
+  .review-card:last-child {
+    margin-right: 0;
+  }
+  
+  .review-content {
+    text-align: left;
+  }
+  
+  
+  .user-placeholder {
+    margin-top: 10px;
+  }
+  
+  h5 {
+    margin-top: 5px;
+    margin-bottom: 0;
+  }
+  
+  .review-card:not(.center) {
+    transform: scale(0.8); /* Adjust the scale factor based on your design */
+    opacity: 0.8;
+  }
+
+.reviews-wrapper {
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+
+.stars-spacing {
+  margin-bottom: 10px;
+}
+
+
+.slider-controls {
+    /* background-color: black; */
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+ margin-top: 20px;
+  }
+  
+  .control-btn {
+    color: white;
+    font-size: 15px;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 10px;
+  }
+  
+  .prev-btn {
+    margin-left: 20px;
+    background-color: black;
+    width: 7%;
+  }
+  
+  .next-btn {
+    margin-right: 20px;
+    background-color: black;
+   
+    width: 7%;
+  }
+  
+
+
+  
