@@ -7,122 +7,100 @@ import {
 import { CgProfile } from "react-icons/cg";
 import styles from "../styles/styles";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { RxCross1 } from "react-icons/rx";
 import { Country, State } from "country-state-city";
-import { MdOutlineTrackChanges, MdTrackChanges } from "react-icons/md";
+import { MdOutlineTrackChanges } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getAllOrdersOfUser } from "../redux/actions/order";
-import { backendURL } from "../config";
+import { updateUserInformation } from "../redux/actions/user";
+import { apiRequest, resolveAssetUrl } from "../utils/api";
+import InboxPanel from "./InboxPanel";
 
-const ProfileContent = ({ active, data }) => {
-  const [name, setName] = useState(localStorage.getItem("fullName") || "");
-  const [email, setEmail] = useState(localStorage.getItem("email") || "");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [password, setPassword] = useState("");
-  const [zipCode, setZipCode] = useState("");
-  const [address, setAddress] = useState("");
-  const [profilePicture, setProfilePicture] = useState(null);
-  const updateNameURL = `${backendURL}/update-name`
-  const updateProfilePictureURL = `${backendURL}/update-profile-picture`
+const ProfileContent = ({ active }) => {
+  const { user, addresses } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+
+  const [name, setName] = useState(user?.fullName || localStorage.getItem("fullName") || "");
+  const [email, setEmail] = useState(user?.email || localStorage.getItem("email") || "");
+  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "");
+  const [profilePictureFile, setProfilePictureFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    // Retrieve full name and email from local storage when the component mounts
-    const fullName = localStorage.getItem("fullName");
-    const userEmail = localStorage.getItem("email");
-    setName(fullName);
-    setEmail(userEmail);
-  }, []);
+    if (user) {
+      setName(user.fullName || "");
+      setEmail(user.email || "");
+      setPhoneNumber(user.phoneNumber || "");
+    }
+  }, [user]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setProfilePictureFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const storedFullName = localStorage.getItem("fullName");
-
+    setSaving(true);
     try {
-      // Check if the name in the field is different from the one in localStorage
-      if (name !== storedFullName) {
-        // Send request to update full name
-        const updateNameResponse = await fetch(updateNameURL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ fullName: name, email: email }),
-        });
+      await dispatch(updateUserInformation(name, phoneNumber));
 
-        if (updateNameResponse.ok) {
-          // Update the name displayed on the screen and in localStorage
-          setName(name);
-          localStorage.setItem("fullName", name);
-          // Display success toast
-          toast.success("Full name updated successfully!");
-        } else {
-          // Display error toast
-          toast.error("Failed to update name");
-        }
-      }
-
-      // Check if profile picture was updated
-      if (profilePicture !== null) {
+      if (profilePictureFile) {
         const formData = new FormData();
-        formData.append("profilePicture", profilePicture);
-        formData.append("email", email); // Include the user's email
+        formData.append("profilePicture", profilePictureFile);
+        formData.append("email", email);
 
-        // Send request to update profile picture
-        const updateProfilePictureResponse = await fetch(updateProfilePictureURL, {
+        const picRes = await apiRequest("/api/auth/profile-picture", {
           method: "POST",
+          role: "customer",
           body: formData,
         });
-
-        if (updateProfilePictureResponse.ok) {
-          // Display success toast
-          toast.success("Profile picture updated successfully!");
-        } else {
-          // Display error toast
-          toast.error("Failed to update profile picture");
-        }
+        dispatch({ type: "updateUserInfoSuccess", payload: picRes.user });
+        setProfilePictureFile(null);
+        setPreviewUrl("");
       }
 
-      // Reset profile picture state
-      setProfilePicture(null);
+      toast.success("Profile updated successfully!");
     } catch (error) {
-      console.error("Error updating profile:", error);
-      // Display error toast
-      toast.error("An error occurred while updating profile");
+      toast.error(error.message || "An error occurred while updating profile");
+    } finally {
+      setSaving(false);
     }
   };
 
+  const avatarSrc = previewUrl || (user?.profilePicture ? resolveAssetUrl(user.profilePicture) : "");
+
   return (
-    <div className="w-full">
-      {/* profilePage */}
+    <div className="w-full px-4">
       {active === 1 && (
         <>
           <div className="flex justify-center w-full">
             <div className="relative">
-              {profilePicture ? (
+              {avatarSrc ? (
                 <img
-                  src={profilePicture}
+                  src={avatarSrc}
                   alt="Profile"
-                  className="w-[150px] h-[150px] border-[3px] border-[#3ad132] rounded-full"
+                  className="w-[150px] h-[150px] border-[3px] border-[#3ad132] rounded-full object-cover"
                 />
               ) : (
                 <CgProfile
                   size={35}
-                  className="w-[150px] h-[150px]  border-[3px] border-[#3ad132] rounded-full "
+                  className="w-[150px] h-[150px] border-[3px] border-[#3ad132] rounded-full text-gray-400 p-4 bg-white"
                 />
               )}
               <label
                 htmlFor="profile-picture-input"
-                className="w-[30px] h-[30px] bg-[#E3E9EE] rounded-full flex items-center justify-center cursor-pointer absolute bottom-[5px] right-[5px]"
+                className="w-[34px] h-[34px] bg-[#E3E9EE] rounded-full flex items-center justify-center cursor-pointer absolute bottom-[5px] right-[5px] shadow"
               >
                 <AiOutlineCamera />
                 <input
                   id="profile-picture-input"
                   type="file"
-                  onChange={(e) =>
-                    setProfilePicture(e.target.files[0])}
+                  onChange={handleFileChange}
                   accept=".png, .jpg, .jpeg, .svg"
                   className="hidden"
                 />
@@ -130,172 +108,126 @@ const ProfileContent = ({ active, data }) => {
             </div>
           </div>
           <br />
-          <br />
           <div className="w-full px-5">
-            <form onSubmit={handleSubmit} aria-required={true}>
-              <div className="w-full  800px:flex block pb-3">
-                <div className=" w-[100%] 800px:w-[50%] mr-4">
+            <form onSubmit={handleSubmit}>
+              <div className="w-full 800px:flex block pb-3 gap-4">
+                <div className="w-full 800px:w-[50%] mb-3">
                   <label className="block pb-1 font-bold">Full Name</label>
                   <input
                     type="text"
-                    className={`${styles.input} border border-gray-300 rounded-md px-3 py-2 w-full`}
+                    className="border border-gray-300 rounded-md px-3 py-2 w-full"
                     required
-                    value={name} // Reflect the changes in the name state variable
-                    onChange={(e) => setName(e.target.value)} // Update the name state variable
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                   />
                 </div>
 
-                <div className=" w-[100%] 800px:w-[50%]">
+                <div className="w-full 800px:w-[50%] mb-3">
                   <label className="block pb-1 font-bold">Email Address</label>
                   <input
                     type="text"
-                    className="border border-gray-300 rounded-md px-3 py-2 w-full"
-                    readOnly // Make the email address non-editable
-                    value={email} // Display the email address
+                    className="border border-gray-300 rounded-md px-3 py-2 w-full bg-gray-100"
+                    readOnly
+                    value={email}
                   />
                 </div>
               </div>
-              <div className="flex justify-center mt-8 mx-auto">
+
+              <div className="w-full 800px:w-[49%] mb-3">
+                <label className="block pb-1 font-bold">Phone Number</label>
                 <input
-                  className="w-[230px] h-[45px] border border-[#3a24db] text-center text-[#3a24db] rounded-[3px] cursor-pointer"
-                  required
-                  value="Update"
-                  type="submit"
+                  type="tel"
+                  className="border border-gray-300 rounded-md px-3 py-2 w-full"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="+92 300 0000000"
                 />
+              </div>
+
+              <div className="flex justify-center mt-8 mx-auto">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="w-[230px] h-[45px] border border-[#3a24db] text-center text-[#3a24db] rounded-[3px] cursor-pointer hover:bg-[#3a24db] hover:text-white transition disabled:opacity-60"
+                >
+                  {saving ? "Updating..." : "Update"}
+                </button>
               </div>
             </form>
           </div>
         </>
       )}
 
-      {/* orderPage */}
-      {active === 2 && (
-        <div>
-          <AllOrder />
-        </div>
-      )}
-
-      {/* Refund Page */}
-      {active === 3 && (
-        <div>
-          <AllRefundsOrder />
-        </div>
-      )}
-
-      {/* Track order */}
-      {active === 5 && (
-        <div>
-          <TrackOrder />
-        </div>
-      )}
-
-      {/* change password */}
-      {active === 6 && (
-        <div>
-          <ChangePassword />
-        </div>
-      )}
-
-      {/* user Address */}
-      {active === 7 && (
-        <div>
-          <Address />
-        </div>
-      )}
-
-      {/* user Address */}
-      {active === 8 && <div></div>}
+      {active === 2 && <AllOrder />}
+      {active === 3 && <AllRefundsOrder />}
+      {active === 4 && <InboxPanel role="customer" />}
+      {active === 5 && <TrackOrderList />}
+      {active === 6 && <ChangePassword />}
+      {active === 7 && <Address addresses={addresses || []} />}
     </div>
   );
 };
 
 const AllOrder = () => {
-  const { orders } = useSelector((state) => state.order);
+  const { orders, isLoading } = useSelector((state) => state.order);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getAllOrdersOfUser()); // Call the action without passing userId
+    dispatch(getAllOrdersOfUser());
   }, [dispatch]);
 
+  if (isLoading) return <div className="p-6">Loading orders...</div>;
+
   return (
-    <div className="flex flex-col">
-      <div className="overflow-x-auto sm:mx-0.5 lg:mx-0.5">
-        <div className="py-2 inline-block min-w-full sm:px-6 lg:px-8">
-          <div className="overflow-hidden">
-            <table className="min-w-full">
-              <thead className="bg-white border-b">
-                <tr>
-                  <th
-                    scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                  >
-                    Order ID
-                  </th>
-                  <th
-                    scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                  >
-                    Items
-                  </th>
-                  <th
-                    scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                  >
-                    Total Price
-                  </th>
-                  <th
-                    scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                  >
-                    Status
-                  </th>
-                  <th
-                    scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                  ></th>
+    <div className="flex flex-col bg-white rounded shadow-sm p-4">
+      <h2 className="text-xl font-semibold mb-4">My Orders</h2>
+      {!orders || orders.length === 0 ? (
+        <p className="text-gray-500 py-4">You haven't placed any orders yet.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <thead className="bg-white border-b">
+              <tr>
+                <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">Order ID</th>
+                <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">Items</th>
+                <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">Total Price</th>
+                <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">Status</th>
+                <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order, index) => (
+                <tr key={order._id} className={index % 2 === 0 ? "bg-gray-100 border-b" : "bg-white border-b"}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {order._id}
+                  </td>
+                  <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                    {(order.orderItems || []).map((item, idx) => (
+                      <span key={idx}>
+                        {item.name} (x{item.qty})
+                        {idx !== order.orderItems.length - 1 && ", "}
+                      </span>
+                    ))}
+                  </td>
+                  <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                    ${order.totalPrice}
+                  </td>
+                  <td className="text-sm text-gray-900 font-medium px-6 py-4 whitespace-nowrap">
+                    {order.orderStatus}
+                  </td>
+                  <td className="text-sm text-gray-900 px-6 py-4 whitespace-nowrap">
+                    <Link to={`/user/order/${order._id}`}>
+                      <button className="flex items-center text-blue-600 hover:underline">
+                        <AiOutlineArrowRight size={18} />
+                      </button>
+                    </Link>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {orders.map((order, index) => (
-                  <tr
-                    key={index}
-                    className={
-                      index % 2 === 0
-                        ? "bg-gray-100 border-b"
-                        : "bg-white border-b"
-                    }
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {order._id}
-                    </td>
-                    <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                      {order.orderItems.map((item, idx) => (
-                        <span key={idx}>
-                          {item.name}
-                          {idx !== order.orderItems.length - 1 && ", "}
-                        </span>
-                      ))}
-                    </td>
-                    <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                      ${order.totalPrice}
-                    </td>
-                    <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                      {order.orderStatus}
-                    </td>
-                    <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                      <Link to={`/user/order/${order._id}`}>
-                        <button className="flex items-center">
-                          <AiOutlineArrowRight size={18} />
-                        </button>
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
+      )}
     </div>
   );
 };
@@ -305,220 +237,162 @@ const AllRefundsOrder = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getAllOrdersOfUser()); // Call the action without passing userId
+    dispatch(getAllOrdersOfUser());
   }, [dispatch]);
 
-  const eligibleOrder =
-    orders && orders.filter((item) => item.orderStatus === "Processing refund");
+  const eligibleOrder = (orders || []).filter(
+    (item) =>
+      item.orderStatus === "Processing refund" || item.orderStatus === "Refund Success"
+  );
 
   return (
-    <div className="flex flex-col">
-      <div className="overflow-x-auto sm:mx-0.5 lg:mx-0.5">
-        <div className="py-2 inline-block min-w-full sm:px-6 lg:px-8">
-          <div className="overflow-hidden">
-            <table className="min-w-full">
-              <thead className="bg-white border-b">
-                <tr>
-                  <th
-                    scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                  >
-                    Order ID
-                  </th>
-                  <th
-                    scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                  >
-                    Refunded Items
-                  </th>
-                  <th
-                    scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                  >
-                    Total Price
-                  </th>
-                  <th
-                    scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                  >
-                    Status
-                  </th>
-                  <th
-                    scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                  ></th>
+    <div className="flex flex-col bg-white rounded shadow-sm p-4">
+      <h2 className="text-xl font-semibold mb-4">My Refunds</h2>
+      {eligibleOrder.length === 0 ? (
+        <p className="text-gray-500 py-4">No refund requests found.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <thead className="bg-white border-b">
+              <tr>
+                <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">Order ID</th>
+                <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">Items</th>
+                <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">Total Price</th>
+                <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">Status</th>
+                <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {eligibleOrder.map((order, index) => (
+                <tr key={order._id} className={index % 2 === 0 ? "bg-gray-100 border-b" : "bg-white border-b"}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {order._id}
+                  </td>
+                  <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                    {(order.orderItems || []).map((item, idx) => (
+                      <span key={idx}>
+                        {item.name}
+                        {idx !== order.orderItems.length - 1 && ", "}
+                      </span>
+                    ))}
+                  </td>
+                  <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                    ${order.totalPrice}
+                  </td>
+                  <td className="text-sm text-gray-900 font-medium px-6 py-4 whitespace-nowrap">
+                    {order.orderStatus}
+                  </td>
+                  <td className="text-sm text-gray-900 px-6 py-4 whitespace-nowrap">
+                    <Link to={`/user/order/${order._id}`}>
+                      <AiOutlineArrowRight size={18} />
+                    </Link>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {eligibleOrder.map((order, index) => (
-                  <tr
-                    key={index}
-                    className={
-                      index % 2 === 0
-                        ? "bg-gray-100 border-b"
-                        : "bg-white border-b"
-                    }
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {order._id}
-                    </td>
-                    <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                      {order.orderItems.map((item, idx) => (
-                        <span key={idx}>
-                          {item.name}
-                          {idx !== order.orderItems.length - 1 && ", "}
-                        </span>
-                      ))}
-                    </td>
-                    <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                      ${order.totalPrice}
-                    </td>
-                    <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                      {order.orderStatus}
-                    </td>
-                    <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                      <Link to={`/order/${order._id}`}>
-                        <button className="flex items-center">
-                          <AiOutlineArrowRight size={18} />
-                        </button>
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
+      )}
     </div>
   );
 };
 
-const TrackOrder = () => {
+const TrackOrderList = () => {
   const { orders } = useSelector((state) => state.order);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getAllOrdersOfUser()); // Call the action without passing userId
+    dispatch(getAllOrdersOfUser());
   }, [dispatch]);
+
   return (
-    <div className="flex flex-col">
-      <div className="overflow-x-auto sm:mx-0.5 lg:mx-0.5">
-        <div className="py-2 inline-block min-w-full sm:px-6 lg:px-8">
-          <div className="overflow-hidden">
-            <table className="min-w-full">
-              <thead className="bg-white border-b">
-                <tr>
-                  <th
-                    scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                  >
-                    Order ID
-                  </th>
-                  <th
-                    scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                  >
-                    Refunded Items
-                  </th>
-                  <th
-                    scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                  >
-                    Total Price
-                  </th>
-                  <th
-                    scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                  >
-                    Status
-                  </th>
-                  <th
-                    scope="col"
-                    className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-                  ></th>
+    <div className="flex flex-col bg-white rounded shadow-sm p-4">
+      <h2 className="text-xl font-semibold mb-4">Track Orders</h2>
+      {!orders || orders.length === 0 ? (
+        <p className="text-gray-500 py-4">No orders to track.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <thead className="bg-white border-b">
+              <tr>
+                <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">Order ID</th>
+                <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">Items</th>
+                <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">Total Price</th>
+                <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">Status</th>
+                <th className="text-sm font-medium text-gray-900 px-6 py-4 text-left">Track</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order, index) => (
+                <tr key={order._id} className={index % 2 === 0 ? "bg-gray-100 border-b" : "bg-white border-b"}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {order._id}
+                  </td>
+                  <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                    {(order.orderItems || []).map((item, idx) => (
+                      <span key={idx}>
+                        {item.name}
+                        {idx !== order.orderItems.length - 1 && ", "}
+                      </span>
+                    ))}
+                  </td>
+                  <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                    ${order.totalPrice}
+                  </td>
+                  <td className="text-sm text-gray-900 font-medium px-6 py-4 whitespace-nowrap">
+                    {order.orderStatus}
+                  </td>
+                  <td className="text-sm text-gray-900 px-6 py-4 whitespace-nowrap">
+                    <Link to={`/track/order/${order._id}`}>
+                      <button className="flex items-center text-blue-600">
+                        <MdOutlineTrackChanges size={20} />
+                      </button>
+                    </Link>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {orders.map((order, index) => (
-                  <tr
-                    key={index}
-                    className={
-                      index % 2 === 0
-                        ? "bg-gray-100 border-b"
-                        : "bg-white border-b"
-                    }
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {order._id}
-                    </td>
-                    <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                      {order.orderItems.map((item, idx) => (
-                        <span key={idx}>
-                          {item.name}
-                          {idx !== order.orderItems.length - 1 && ", "}
-                        </span>
-                      ))}
-                    </td>
-                    <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                      ${order.totalPrice}
-                    </td>
-                    <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                      {order.orderStatus}
-                    </td>
-                    <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                      <Link to={`/track/order/${order._id}`}>
-                        <button className="flex items-center">
-                          <MdOutlineTrackChanges size={18} />
-                        </button>
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
+      )}
     </div>
   );
 };
 
-const ChangePassword = ({ email }) => {
+const ChangePassword = () => {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const passwordChangeHandler = async (e) => {
     e.preventDefault();
 
-    // Check if new password and confirm password match
+    if (newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters.");
+      return;
+    }
     if (newPassword !== confirmPassword) {
-      toast.error("New password and confirm password do not match");
+      toast.error("New password and confirm password do not match.");
       return;
     }
 
-    const changePasswordURL = `${backendURL}/change-password`;
+    setSaving(true);
     try {
-      // Send request to server to change password
-      const response = await fetch(changePasswordURL, {
+      await apiRequest("/api/auth/change-password", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, oldPassword, newPassword }),
+        role: "customer",
+        body: { oldPassword, newPassword, confirmPassword },
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        toast.error(error.message);
-        return;
-      }
-
       toast.success("Password updated successfully!");
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (error) {
-      console.error("Error changing password:", error);
-      toast.error("An error occurred while changing password");
+      toast.error(error.message || "An error occurred while changing password");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -528,276 +402,238 @@ const ChangePassword = ({ email }) => {
         Change Password
       </h1>
 
-      <div className="w-full">
-        <form
-          aria-required
-          onSubmit={passwordChangeHandler}
-          className="flex flex-col items-center"
-        >
-          <div className="w-[100%] 800px:w-[50%] mt-5">
-            <label className="block pb-2">Enter your old password</label>
-            <input
-              type="password"
-              className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
-              required
-              value={oldPassword}
-              onChange={(e) => setOldPassword(e.target.value)}
-            />
-          </div>
-          <div className="w-[100%] 800px:w-[50%] mt-2">
-            <label className="block pb-2">Enter your new password</label>
-            <input
-              type="password"
-              className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
-              required
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-          </div>
-          <div className="w-[100%] 800px:w-[50%] mt-2">
-            <label className="block pb-2">Enter your confirm password</label>
-            <input
-              type="password"
-              className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-            <input
-              className={`w-[95%] h-[40px] border border-[#3a24db] text-center text-[#3a24db] rounded-[3px] mt-8 cursor-pointer`}
-              required
-              value="Update"
-              type="submit"
-            />
-          </div>
-        </form>
-      </div>
+      <form onSubmit={passwordChangeHandler} className="flex flex-col items-center">
+        <div className="w-[100%] 800px:w-[50%] mt-5">
+          <label className="block pb-2">Enter your old password</label>
+          <input
+            type="password"
+            className={`${styles.input} mb-4`}
+            required
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
+          />
+        </div>
+        <div className="w-[100%] 800px:w-[50%] mt-2">
+          <label className="block pb-2">Enter your new password</label>
+          <input
+            type="password"
+            className={`${styles.input} mb-4`}
+            required
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+        </div>
+        <div className="w-[100%] 800px:w-[50%] mt-2">
+          <label className="block pb-2">Confirm new password</label>
+          <input
+            type="password"
+            className={`${styles.input} mb-4`}
+            required
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+          <button
+            type="submit"
+            disabled={saving}
+            className="w-full h-[40px] border border-[#3a24db] text-center text-[#3a24db] rounded-[3px] mt-4 cursor-pointer hover:bg-[#3a24db] hover:text-white transition disabled:opacity-60"
+          >
+            {saving ? "Updating..." : "Update"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 };
 
-const Address = () => {
+const Address = ({ addresses }) => {
+  const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
   const [country, setCountry] = useState("");
   const [city, setCity] = useState("");
-  const [zipCode, setZipCode] = useState();
+  const [zipCode, setZipCode] = useState("");
   const [address1, setAddress1] = useState("");
   const [address2, setAddress2] = useState("");
   const [addressType, setAddressType] = useState("");
 
-  const addressTypeData = [
-    {
-      name: "Default",
-    },
-    {
-      name: "Home",
-    },
-    {
-      name: "Office",
-    },
-  ];
+  const addressTypeData = [{ name: "Default" }, { name: "Home" }, { name: "Office" }];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (addressType === "" || country === "" || city === "") {
-      toast.error("Please fill all the fields!");
-    } else {
-      // Simulate deletion here (temporarily)
-      toast.success("Address temporarily deleted!");
-      clearAddressFields(); // Clear address fields after successful submission
+    if (!addressType || !country || !city || !address1 || !zipCode) {
+      toast.error("Please fill all required fields!");
+      return;
+    }
+    try {
+      const res = await apiRequest("/api/addresses", {
+        method: "POST",
+        role: "customer",
+        body: { addressType, country, city, address1, address2, zipCode },
+      });
+      dispatch({ type: "UpdateAddressesSuccess", payload: res.addresses });
+      toast.success("Address added successfully!");
+      setOpen(false);
+      setCountry("");
+      setCity("");
+      setZipCode("");
+      setAddress1("");
+      setAddress2("");
+      setAddressType("");
+    } catch (error) {
+      toast.error(error.message || "Failed to save address.");
     }
   };
-  const handleDelete = () => {
-    // Implement address deletion logic here
-    toast.success("Address deleted successfully!");
-  };
 
-  const clearAddressFields = () => {
-    // Clear address fields
-    setCountry("");
-    setCity("");
-    setZipCode("");
-    setAddress1("");
-    setAddress2("");
-    setAddressType("");
+  const handleDelete = async (id) => {
+    try {
+      const res = await apiRequest(`/api/addresses/${id}`, {
+        method: "DELETE",
+        role: "customer",
+      });
+      dispatch({ type: "UpdateAddressesSuccess", payload: res.addresses });
+      toast.success("Address deleted successfully!");
+    } catch (error) {
+      toast.error(error.message || "Failed to delete address.");
+    }
   };
 
   return (
     <div className="w-full px-5">
       {open && (
-        <div className="fixed w-full h-screen bg-[#0000004b] top-0 left-0 flex items-center justify-center ">
-          <div className="w-[35%] h-[80vh] bg-white rounded shadow relative overflow-y-scroll">
-            <div className="w-full flex justify-end p-3">
-              <RxCross1
-                size={30}
-                className="cursor-pointer"
-                onClick={() => setOpen(false)}
-              />
+        <div className="fixed w-full h-screen bg-[#0000004b] top-0 left-0 flex items-center justify-center z-50">
+          <div className="w-[90%] md:w-[38%] max-h-[85vh] bg-white rounded shadow relative overflow-y-scroll p-4">
+            <div className="w-full flex justify-end">
+              <RxCross1 size={26} className="cursor-pointer" onClick={() => setOpen(false)} />
             </div>
-            <h1 className="text-center text-[25px] font-Poppins">
-              Add New Address
-            </h1>
-            <form aria-required onSubmit={handleSubmit} className="w-full">
-              <div className="w-full block p-4">
-                <div className="w-full pb-2">
-                  <label className="block pb-2">Country</label>
-                  <select
-                    name=""
-                    id=""
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    className="w-[95%] border h-[40px] rounded-[5px]"
-                  >
-                    <option value="" className="block border pb-2">
-                      choose your country
+            <h1 className="text-center text-[24px] font-Poppins mb-4">Add New Address</h1>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div>
+                <label className="block pb-1">Country</label>
+                <select
+                  value={country}
+                  onChange={(e) => {
+                    setCountry(e.target.value);
+                    setCity("");
+                  }}
+                  className="w-full border h-[40px] rounded-[5px] px-2"
+                  required
+                >
+                  <option value="">Choose your country</option>
+                  {Country.getAllCountries().map((item) => (
+                    <option key={item.isoCode} value={item.isoCode}>
+                      {item.name}
                     </option>
-                    {Country &&
-                      Country.getAllCountries().map((item) => (
-                        <option
-                          className="block pb-2"
-                          key={item.isoCode}
-                          value={item.isoCode}
-                        >
-                          {item.name}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-
-                <div className="w-full pb-2">
-                  <label className="block pb-2">Choose your City</label>
-                  <select
-                    name=""
-                    id=""
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="w-[95%] border h-[40px] rounded-[5px]"
-                  >
-                    <option value="" className="block border pb-2">
-                      choose your city
-                    </option>
-                    {State &&
-                      State.getStatesOfCountry(country).map((item) => (
-                        <option
-                          className="block pb-2"
-                          key={item.isoCode}
-                          value={item.isoCode}
-                        >
-                          {item.name}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-
-                <div className="w-full pb-2">
-                  <label className="block pb-2">Address 1</label>
-                  <input
-                    type="address"
-                    className={`${styles.input}`}
-                    required
-                    value={address1}
-                    onChange={(e) => setAddress1(e.target.value)}
-                  />
-                </div>
-                <div className="w-full pb-2">
-                  <label className="block pb-2">Address 2</label>
-                  <input
-                    type="address"
-                    className={`${styles.input}`}
-                    required
-                    value={address2}
-                    onChange={(e) => setAddress2(e.target.value)}
-                  />
-                </div>
-
-                <div className="w-full pb-2">
-                  <label className="block pb-2">Zip Code</label>
-                  <input
-                    type="number"
-                    className={`${styles.input}`}
-                    required
-                    value={zipCode}
-                    onChange={(e) => setZipCode(e.target.value)}
-                  />
-                </div>
-
-                <div className="w-full pb-2">
-                  <label className="block pb-2">Address Type</label>
-                  <select
-                    name=""
-                    id=""
-                    value={addressType}
-                    onChange={(e) => setAddressType(e.target.value)}
-                    className="w-[95%] border h-[40px] rounded-[5px]"
-                  >
-                    <option value="" className="block border pb-2">
-                      Choose your Address Type
-                    </option>
-                    {addressTypeData &&
-                      addressTypeData.map((item) => (
-                        <option
-                          className="block pb-2"
-                          key={item.name}
-                          value={item.name}
-                        >
-                          {item.name}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-
-                <div className=" w-full pb-2">
-                  <input
-                    type="submit"
-                    className={`${styles.input} mt-5 cursor-pointer bg-[#051D40] hover:bg-[#18345f] text-[#FFA500] font-bold p-2 px-4y`}
-                    // className="mt-5 cursor-pointer bg-[#051D40] hover:bg- [#18345f] text-[#FFA500] font-bold p-2 px-4y rounded"
-                    required
-                    readOnly
-                  />
-                </div>
+                  ))}
+                </select>
               </div>
+
+              <div>
+                <label className="block pb-1">City / State</label>
+                <select
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="w-full border h-[40px] rounded-[5px] px-2"
+                  required
+                >
+                  <option value="">Choose your city</option>
+                  {State.getStatesOfCountry(country).map((item) => (
+                    <option key={item.isoCode} value={item.isoCode}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block pb-1">Address 1</label>
+                <input
+                  type="text"
+                  className={`${styles.input}`}
+                  required
+                  value={address1}
+                  onChange={(e) => setAddress1(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block pb-1">Address 2</label>
+                <input
+                  type="text"
+                  className={`${styles.input}`}
+                  value={address2}
+                  onChange={(e) => setAddress2(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block pb-1">Zip Code</label>
+                <input
+                  type="text"
+                  className={`${styles.input}`}
+                  required
+                  value={zipCode}
+                  onChange={(e) => setZipCode(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block pb-1">Address Type</label>
+                <select
+                  value={addressType}
+                  onChange={(e) => setAddressType(e.target.value)}
+                  className="w-full border h-[40px] rounded-[5px] px-2"
+                  required
+                >
+                  <option value="">Choose Address Type</option>
+                  {addressTypeData.map((item) => (
+                    <option key={item.name} value={item.name}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full mt-4 cursor-pointer bg-[#051D40] hover:bg-[#18345f] text-[#FFA500] font-bold py-2.5 rounded"
+              >
+                Save Address
+              </button>
             </form>
           </div>
         </div>
       )}
-      <div className="flex w-full items-center justify-between">
-        <h1 className=" text-[25px] text-center font-[600] text-[#000000ba] pb-2">
-          My Address
-        </h1>
-        <div
-          className={`${styles.button} !rounded-md`}
-          onClick={() => setOpen(true)}
-        >
-          <span className="text-[#fff]">Add new</span>
-        </div>
-      </div>
-      <br />
-      <div className="w-full bg-white h-[70px] rounded-[4px] flex items-center px-3 shadow justify-between pr-10">
-        <div className="flex items-center">
-          <h5 className="pl-5 font-[600]">Default</h5>
-        </div>
-        <div className=" pl-8 flex items-center">
-          <h6>Gulshan , A22 Commercial Street</h6>
-        </div>
 
-        <div className=" pl-8 flex items-center">
-          <h6>(213)768-5647</h6>
-        </div>
-        <div className=" min-w-[10%] pl-8 flex items-center justify-between">
-          <AiOutlineDelete
-            size={25}
-            className="cursor-pointer"
-            onClick={handleDelete}
-          />
+      <div className="flex w-full items-center justify-between mb-4">
+        <h1 className="text-[25px] font-[600] text-[#000000ba]">My Addresses</h1>
+        <div className={`${styles.button} !rounded-md`} onClick={() => setOpen(true)}>
+          <span className="text-[#fff]">Add New</span>
         </div>
       </div>
-      {/* 
-      {user && user.addresses.length === 0 && (
-        <h5 className="text-center pt-8 text-[18px]">
-          You not have any saved address!
+
+      {addresses.length === 0 ? (
+        <h5 className="text-center pt-8 text-[17px] text-gray-500">
+          You do not have any saved addresses yet!
         </h5>
-      )} */}
+      ) : (
+        <div className="space-y-3">
+          {addresses.map((addr) => (
+            <div
+              key={addr.id}
+              className="w-full bg-white min-h-[70px] rounded-[4px] flex items-center px-4 py-3 shadow justify-between"
+            >
+              <div>
+                <span className="font-[600] text-[#051d40]">{addr.addressType}</span>
+                <p className="text-sm text-gray-700">
+                  {addr.address1}
+                  {addr.address2 ? `, ${addr.address2}` : ""} — {addr.city}, {addr.country} ({addr.zipCode})
+                </p>
+              </div>
+              <AiOutlineDelete
+                size={22}
+                className="cursor-pointer text-red-500 hover:text-red-700"
+                onClick={() => handleDelete(addr.id)}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

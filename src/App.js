@@ -22,10 +22,9 @@ import {
 } from "./routes/Routes.js";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Store from "./redux/store.js";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ShopHomePage } from "./ShopRoutes.js";
 import {
   ShopDashboardPage,
@@ -37,54 +36,30 @@ import {
   ShopAllRefunds,
 } from "./routes/ShopRoute.js";
 import SellerProtectedRoute from "./routes/sellerProtectedRoute.js";
+import ProtectedRoute from "./ProtectedRoute.js";
 import { useDispatch, useSelector } from "react-redux";
 import Loader from "./components/Loader.js";
+import { loadUser } from "./redux/actions/user.js";
+import { loadSeller } from "./redux/actions/seller.js";
+import { getAllProducts } from "./redux/actions/product.js";
+import InboxPage from "./screens/InboxPage.js";
+import ShopInboxPage from "./screens/Shop/ShopInboxPage.js";
+import ShopSettingsPage from "./screens/Shop/ShopSettingsPage.js";
+import ShopPreviewPage from "./screens/Shop/ShopPreviewPage.js";
+
+const stripePromise = loadStripe("pk_test_placeholder_solar_marketplace");
 
 const App = () => {
-  const stripePromise = loadStripe("YOUR_STRIPE_PUBLIC_KEY");
   const dispatch = useDispatch();
-
   const { isLoading } = useSelector((state) => state.seller);
 
   useEffect(() => {
-    // Dispatch "LoadSellerRequest" action when component mounts
-    dispatch({ type: "LoadSellerRequest" });
-
-    // Simulate the user being recognized as a seller
-    setTimeout(() => {
-      dispatch({
-        type: "LoadSellerSuccess",
-        payload: {
-          id: 1,
-          name: "Electronics Hub",
-          email: "electronicshub@gmail.com",
-          description:
-            "E-HUB is a comprehensive online platform dedicated to the solar energy sector. It serves as a hub for all things related to solar energy, catering to various stakeholders including consumers, solar industry professionals, and enthusiasts",
-          address:
-            "1234 Solar Street, Renewable City, Sunshine State, Solarland",
-          phoneNumber: "+1 (555) 123-4567",
-          createdAt: "2023-03-15",
-        },
-      });
-    }, 2000); // Simulating a delay of 2 seconds
-
-    // Add event listener to clear local storage when the browser is closed
-    window.addEventListener("beforeunload", clearLocalStorage);
-
-    return () => {
-      // Remove event listener when the component unmounts
-      window.removeEventListener("beforeunload", clearLocalStorage);
-    };
+    dispatch(loadUser());
+    dispatch(loadSeller());
+    dispatch(getAllProducts());
   }, [dispatch]);
 
-  // Function to clear local storage
-  const clearLocalStorage = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("email");
-    localStorage.removeItem("fullName");
-  };
-
-  if (isLoading) {
+  if (isLoading && localStorage.getItem("vendorToken")) {
     return <Loader />;
   }
 
@@ -94,7 +69,9 @@ const App = () => {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/LoginPage" element={<LoginPage />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/Signup" element={<SignupPage />} />
+          <Route path="/signup" element={<SignupPage />} />
 
           <Route path="/products" element={<ProductPage />} />
           <Route path="/product/:id" element={<ProductDetailsPage />} />
@@ -102,14 +79,66 @@ const App = () => {
           <Route path="/solar-package/:id" element={<SolarDetailsPage />} />
           <Route path="/contactUs" element={<ContactPage />} />
           <Route path="/faq" element={<FaqPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/user/order/:id" element={<OrderDetailsPage />} />
-          <Route path="/track/order/:id" element={<TrackOrderPage />} />
-          <Route path="/payment" element={<PaymentPage />} />
-          <Route path="/order/success" element={<OrderSuccessPage />} />
+          <Route path="/shop/:id" element={<ShopPreviewPage />} />
 
-          {/* Vendor Routes */}
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute>
+                <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment"
+            element={
+              <ProtectedRoute>
+                <PaymentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/order/success"
+            element={
+              <ProtectedRoute>
+                <OrderSuccessPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user/order/:id"
+            element={
+              <ProtectedRoute>
+                <OrderDetailsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/track/order/:id"
+            element={
+              <ProtectedRoute>
+                <TrackOrderPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/inbox"
+            element={
+              <ProtectedRoute>
+                <InboxPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Vendor Auth Routes */}
           <Route path="/vendor" element={<VendorRegistrationPage />} />
           <Route path="/vendor-login" element={<VendorLoginPage />} />
           <Route
@@ -121,8 +150,7 @@ const App = () => {
             }
           />
 
-          {/* Shop routes */}
-
+          {/* Shop Dashboard Routes */}
           <Route
             path="/dashboard"
             element={
@@ -155,7 +183,14 @@ const App = () => {
               </SellerProtectedRoute>
             }
           />
-
+          <Route
+            path="/dashboard/order/:id"
+            element={
+              <SellerProtectedRoute>
+                <ShopAllOrderDetails />
+              </SellerProtectedRoute>
+            }
+          />
           <Route
             path="/dashboard-create-product"
             element={
@@ -180,11 +215,35 @@ const App = () => {
               </SellerProtectedRoute>
             }
           />
+          <Route
+            path="/dashboard/coupons"
+            element={
+              <SellerProtectedRoute>
+                <ShopAllCoupons />
+              </SellerProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard-messages"
+            element={
+              <SellerProtectedRoute>
+                <ShopInboxPage />
+              </SellerProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <SellerProtectedRoute>
+                <ShopSettingsPage />
+              </SellerProtectedRoute>
+            }
+          />
         </Routes>
       </Elements>
       <ToastContainer
         position="bottom-center"
-        autoClose={5000}
+        autoClose={4000}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick

@@ -1,73 +1,88 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../styles/SignupPage.css"; // Create a new CSS file for SignupPage styles
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import "../styles/SignupPage.css";
 import logo5 from "../logo6.png";
 import logincover from "../cover2.jpg";
-import { backendURL } from "../config";
+import { apiRequest } from "../utils/api";
+import { loginSuccessAction } from "../redux/actions/user";
 
 const SignupPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const navigate = useNavigate(); // Get navigate object
+  const [errorMessage, setErrorMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state) => state.user);
 
-  const signUpURL = `${backendURL}/Signup`
+  useEffect(() => {
+    if (isAuthenticated && localStorage.getItem("customerToken")) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
+
   const handleSignup = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
+    setErrorMessage("");
 
-    // Ensure all fields are filled
-    if (!name || !email || !password || !confirmPassword) {
-      console.error("All fields are required");
+    if (!name.trim() || !email.trim() || !password || !confirmPassword) {
+      const msg = "All fields are required.";
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
 
-    // Ensure password and confirm password match
+    if (password.length < 6) {
+      const msg = "Password must be at least 6 characters long.";
+      setErrorMessage(msg);
+      toast.error(msg);
+      return;
+    }
+
     if (password !== confirmPassword) {
-      console.error("Passwords do not match");
+      const msg = "Passwords do not match.";
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
     }
 
+    setSubmitting(true);
     try {
-      // Send signup data to the server with hashed password
-      const response = await fetch(signUpURL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const data = await apiRequest("/api/auth/signup", {
+        method: "POST",
+        body: {
+          fullName: name.trim(),
+          email: email.trim(),
+          password,
         },
-        body: JSON.stringify({
-          fullName: name,
-          email,
-          password, 
-        }),
       });
 
-      // Check if signup was successful
-      if (response.ok) {
-        // Redirect to the login page after successful signup
-        console.log('Signup successful');
-        navigate('/LoginPage');
-      } else {
-        // Handle signup error
-        const errorMessage = await response.text();
-        console.error('Error during signup:', errorMessage);
-      }
+      await dispatch(loginSuccessAction(data));
+      toast.success("Account created successfully! Welcome to Energy Matrix.");
+      navigate("/");
     } catch (error) {
-      // Handle any errors that occur during signup
-      console.error('Error during signup:', error.message);
+      const msg = error.message || "Error during signup";
+      setErrorMessage(msg);
+      toast.error(msg);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <div
-      className="relative h-screen "
+      className="relative min-h-screen"
       style={{
         backgroundImage: `url(${logincover})`,
         backgroundSize: "cover",
       }}
     >
-      <div className="absolute inset-0 bg-black opacity-50 "></div>
-      <div className="absolute inset-0 flex flex-col justify-center">
+      <div className="absolute inset-0 bg-black opacity-50"></div>
+      <div className="relative z-10 flex flex-col justify-center min-h-screen py-6">
         <Link to="/">
           <img
             src={logo5}
@@ -75,14 +90,13 @@ const SignupPage = () => {
             style={{
               height: "70px",
               width: "110px",
-              marginTop:"0px",
-             
+              marginTop: "0px",
             }}
           />
         </Link>
-        <h2 className=" text-center text-3xl font-semibold text-white">
-            Welcome to <span style={{ color: "orange" }}>Energy Matrix!</span>
-          </h2>
+        <h2 className="text-center text-3xl font-semibold text-white mb-4">
+          Welcome to <span style={{ color: "orange" }}>Energy Matrix!</span>
+        </h2>
 
         <div
           style={{
@@ -92,16 +106,23 @@ const SignupPage = () => {
           }}
         >
           <div className="signup-container">
-          <h4 className=" text-center text-2xl font-bold text-black">
-            Create your account
-          </h4>
-            
+            <h4 className="text-center text-2xl font-bold text-black mb-2">
+              Create your account
+            </h4>
+
+            {errorMessage && (
+              <div className="mb-3 p-2 rounded bg-red-100 text-red-700 text-sm">
+                {errorMessage}
+              </div>
+            )}
+
             <form onSubmit={handleSignup}>
               <label>Full Name:</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                placeholder="John Doe"
                 required
               />
 
@@ -110,6 +131,7 @@ const SignupPage = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
                 required
               />
 
@@ -118,6 +140,7 @@ const SignupPage = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="At least 6 characters"
                 required
               />
 
@@ -126,20 +149,19 @@ const SignupPage = () => {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter password"
                 required
               />
+
               <button
                 type="submit"
-                className="custom-button"
+                disabled={submitting}
+                className="custom-button disabled:opacity-60"
               >
-                Sign Up
+                {submitting ? "Creating Account..." : "Sign Up"}
               </button>
-              <div
-                style={{
-                  display: "flex",
-                  marginTop: "10px",
-                }}
-              >
+
+              <div style={{ display: "flex", marginTop: "12px" }}>
                 <h4 style={{ marginRight: "8px" }}>Already have an account?</h4>
                 <Link to="/LoginPage" className="text-blue-600">
                   Login

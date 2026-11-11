@@ -1,92 +1,79 @@
-// Action to create a product
+import { apiRequest } from "../../utils/api";
+
+export const getAllProducts = () => async (dispatch) => {
+  try {
+    dispatch({ type: "getAllProductsRequest" });
+    const data = await apiRequest("/api/products?type=all");
+    const list = data.products || [];
+    dispatch({
+      type: "getAllProductsSuccess",
+      payload: {
+        products: list.filter((p) => p.type !== "package"),
+        packages: list.filter((p) => p.type === "package"),
+      },
+    });
+  } catch (error) {
+    dispatch({
+      type: "getAllProductsFailed",
+      payload: error.message || "Failed to load products.",
+    });
+  }
+};
 
 export const createProduct = (newForm) => async (dispatch) => {
-    try {
-        dispatch({
-            type: "productCreateRequest",
-        });
-
-        // Simulate a delay to mimic the time taken for an HTTP request
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Mock response data for the created product
-        const createdProduct = {
-            id: Math.random().toString(36).substr(2, 9), // Generate a random ID
-            ...Object.fromEntries(newForm.entries()),
-        };
-
-        // Dispatch an action to update the Redux store with the created product
-        dispatch({
-            type: "productCreateSuccess",
-            payload: createdProduct.product,
-        });
-
-        // Store the created product data in local storage
-        const storedProducts = JSON.parse(localStorage.getItem("products")) || [];
-        localStorage.setItem(
-            "products",
-            JSON.stringify([...storedProducts, createdProduct])
-        );
-    } catch (error) {
-        dispatch({
-            type: "productCreateFail",
-            payload: error.response
-                ? error.response.data.message
-                : "Failed to create product.",
-        });
-    }
+  try {
+    dispatch({ type: "productCreateRequest" });
+    const data = await apiRequest("/api/products", {
+      method: "POST",
+      role: "vendor",
+      body: newForm,
+    });
+    dispatch({
+      type: "productCreateSuccess",
+      payload: data.product,
+    });
+    return data.product;
+  } catch (error) {
+    dispatch({
+      type: "productCreateFail",
+      payload: error.message || "Failed to create product.",
+    });
+    throw error;
+  }
 };
 
 export const getAllProductsShop = (id) => async (dispatch) => {
-    try {
-        dispatch({
-            type: "getAllProductsShopRequest",
-        });
-
-        const storedProducts = JSON.parse(localStorage.getItem("products")) || [];
-
-        setTimeout(() => {
-            dispatch({
-                type: "getAllProductsShopSuccess",
-                payload: storedProducts,
-            });
-        }, 1000);
-    } catch (error) {
-        dispatch({
-            type: "getAllProductsShopFailed",
-            payload: error.message,
-        });
-    }
+  try {
+    dispatch({ type: "getAllProductsShopRequest" });
+    const query = id ? `?vendorId=${id}&type=all` : "?type=all";
+    const data = await apiRequest(`/api/products${query}`);
+    dispatch({
+      type: "getAllProductsShopSuccess",
+      payload: data.products || [],
+    });
+  } catch (error) {
+    dispatch({
+      type: "getAllProductsShopFailed",
+      payload: error.message || "Failed to fetch shop products.",
+    });
+  }
 };
 
-// delete product of a shop
-
-export const deleteProduct = (id) => (dispatch) => {
-    try {
-        dispatch({
-            type: "deleteProductRequest",
-        });
-
-        // Simulate a delay to mimic an asynchronous operation
-        setTimeout(() => {
-            // Retrieve products from local storage
-            const storedProducts = JSON.parse(localStorage.getItem("products")) || [];
-            // Filter out the product to be deleted
-            const updatedProducts = storedProducts.filter(
-                (product) => product.id !== id
-            );
-            // Update local storage with the updated product list
-            localStorage.setItem("products", JSON.stringify(updatedProducts));
-
-            dispatch({
-                type: "deleteProductSuccess",
-                payload: "Product deleted successfully.",
-            });
-        }, 1000); // Adjust the delay as needed
-    } catch (error) {
-        dispatch({
-            type: "deleteProductFailed",
-            payload: error.message || "Failed to delete product.",
-        });
-    }
+export const deleteProduct = (id) => async (dispatch) => {
+  try {
+    dispatch({ type: "deleteProductRequest" });
+    const data = await apiRequest(`/api/products/${id}`, {
+      method: "DELETE",
+      role: "vendor",
+    });
+    dispatch({
+      type: "deleteProductSuccess",
+      payload: { id, message: data.message || "Product deleted successfully." },
+    });
+  } catch (error) {
+    dispatch({
+      type: "deleteProductFailed",
+      payload: error.message || "Failed to delete product.",
+    });
+  }
 };

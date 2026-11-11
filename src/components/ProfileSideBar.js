@@ -1,33 +1,25 @@
 import React from "react";
 import { RxPerson } from "react-icons/rx";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { HiOutlineShoppingBag, HiOutlineReceiptRefund } from "react-icons/hi";
-import {
-  AiOutlineCreditCard,
-  AiOutlineMessage,
-  AiOutlineLogin,
-} from "react-icons/ai";
-import {
-  MdOutlineAdminPanelSettings,
-  MdOutlinePassword,
-  MdOutlineTrackChanges,
-} from "react-icons/md";
+import { AiOutlineMessage, AiOutlineLogin } from "react-icons/ai";
+import { MdOutlineTrackChanges } from "react-icons/md";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { TbAddressBook } from "react-icons/tb";
+import { toast } from "react-toastify";
+import { logoutUser } from "../redux/actions/user";
 
 const ProfileSideBar = ({ setActive, active }) => {
-  const navigate = useNavigate(); // Added parentheses after useNavigate
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const logoutHandler = () => {
-    // Clear authentication token from local storage
-    localStorage.removeItem("authToken");
-    // Remove isLoggedIn flag from local storage
-    localStorage.removeItem("isLoggedIn");
-    // Remove email and fullName from local storage
-    localStorage.removeItem('email');
-    localStorage.removeItem('fullName');
-    // Navigate to login page
+    dispatch(logoutUser());
+    toast.success("Logged out successfully.");
     navigate("/LoginPage");
   };
+
   return (
     <div className="w-full bg-white shadow-sm rounded-[10px] p-4 pt-8">
       <div className="flex items-center cursor-pointer w-full mb-8" onClick={() => setActive(1)}>
@@ -67,12 +59,15 @@ const ProfileSideBar = ({ setActive, active }) => {
         </span>
       </div>
       <div className="flex items-center cursor-pointer w-full mb-8" onClick={() => setActive(7)}>
-        <TbAddressBook size={20} color={active === 87 ? "red" : ""} />
+        <TbAddressBook size={20} color={active === 7 ? "red" : ""} />
         <span className={`pl-3 ${active === 7 ? "text-[red]" : ""} 800px:block hidden`}>
           Address
         </span>
       </div>
-      <div className="single_item flex items-center cursor-pointer w-full mb-8" onClick={() => setActive(8) || logoutHandler()}>
+      <div
+        className="single_item flex items-center cursor-pointer w-full mb-8"
+        onClick={logoutHandler}
+      >
         <AiOutlineLogin size={20} color={active === 8 ? "red" : ""} />
         <span className={`pl-3 ${active === 8 ? "text-[red]" : ""} 800px:block hidden`}>
           Log Out

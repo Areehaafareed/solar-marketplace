@@ -16,10 +16,18 @@ export const sellerReducer = createReducer(initialState, (builder) => {
       state.isLoading = false;
       state.isSeller = true;
       state.seller = action.payload;
+      state.error = null;
     })
     .addCase("LoadSellerFail", (state, action) => {
       state.isLoading = false;
-      state.error = action.payload;
+      state.error = action.payload || null;
       state.isSeller = false;
+      state.seller = null;
+    })
+    .addCase("LogoutSellerSuccess", (state) => {
+      state.isLoading = false;
+      state.isSeller = false;
+      state.seller = null;
+      state.error = null;
     });
 });

@@ -1,133 +1,79 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { RxCross1 } from "react-icons/rx";
 import { IoBagHandleOutline } from "react-icons/io5";
 import { HiOutlineMinus, HiPlus } from "react-icons/hi";
 import styles from "../styles/styles";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import { backendURL } from "../config";
+import { useDispatch, useSelector } from "react-redux";
+import { emptyCart, removeFromCart, updateCartQty } from "../redux/actions/cart";
+import { resolveAssetUrl } from "../utils/api";
 
 const Cart = ({ setOpenCart }) => {
-  const [cart, setCart] = useState([]);
-  const userEmail = localStorage.getItem('userEmail'); // Retrieve user email from localStorage
+  const { cart } = useSelector((state) => state.cart);
+  const dispatch = useDispatch();
 
-  // Load cart items from local storage on component mount
-  useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem("cartItems")) ?? [];
-    setCart(storedCart);
-  }, []);
-
-  const updateCart = (updatedCart) => {
-    setCart(updatedCart);
-    localStorage.setItem("cartItems", JSON.stringify(updatedCart));
-  };
-
-  const removeFromCartHandler = (data) => {
-    const updatedCart = cart.filter(item => item !== data);
-    updateCart(updatedCart);
-  };
-
-  const quantityChangeHandler = (data) => {
-    // Check if the item is already in the cart
-    const itemIndex = cart.findIndex(item => item.data.id === data.data.id);
-
-    if (itemIndex !== -1) {
-      // If the item is already in the cart, update its quantity
-      const updatedCart = [...cart];
-      updatedCart[itemIndex].qty = data.qty;
-      updateCart(updatedCart);
-    } else {
-      // If the item is not in the cart, add it
-      const updatedCart = [...cart, data];
-      updateCart(updatedCart);
-    }
-
-    console.log("Request payload:", {
-      email: userEmail,
-      item: data
-    });
-
-    const addToCartURL = `${backendURL}/add-to-cart`;
-
+  const removeFromCartHandler = async (data) => {
     try {
-      fetch(addToCartURL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: userEmail,
-          item: data // Pass the entire data object
-        })
-      })
-        .then(response => response.json())
-        .then(responseData => {
-          console.log(responseData); // Log the response from the backend
-        })
-        .catch(error => {
-          console.error('Error adding item to cart:', error);
-          // Handle error, show toast message, etc.
-        });
+      await dispatch(removeFromCart(data.id));
+      toast.info("Item removed from cart.");
     } catch (error) {
-      console.error('Error adding item to cart:', error);
-      // Handle error, show toast message, etc.
+      toast.error(error.message || "Failed to remove item.");
     }
   };
 
-  const emptyCartHandler = () => {
-    setCart([]);
-    localStorage.removeItem("cartItems");
+  const quantityChangeHandler = async (data, newQty) => {
+    try {
+      await dispatch(updateCartQty(data.id, newQty));
+    } catch (error) {
+      toast.error(error.message || "Failed to update quantity.");
+    }
+  };
+
+  const emptyCartHandler = async () => {
+    await dispatch(emptyCart());
     toast.success("Cart has been emptied!");
   };
 
-  // Calculate total price
-  const totalPrice = cart.reduce(
-    (acc, item) => acc + item.qty * item.discount_price,
-    0
-  ).toFixed(2);
+  const totalPrice = (cart || [])
+    .reduce((acc, item) => acc + Number(item.qty || 1) * Number(item.discount_price || 0), 0)
+    .toFixed(2);
 
   return (
-    <div className="fixed top-0 left-0 w-full bg-[#0000004b] h-screen z-10">
-      <div className="fixed top-0 right-0 h-full w-[80%] 800px:w-[25%] bg-white flex flex-col overflow-y-scroll justify-between shadow-sm">
-        {cart.length === 0 ? (
-          <div className="w-full h-screen flex items-center justify-center">
-            <div className="flex w-full justify-end pt-5 pr-5 fixed top-3 right-3">
-              <RxCross1
-                size={25}
-                className="cursor-pointer"
-                onClick={() => setOpenCart(false)}
-              />
-            </div>
-            <h5>Cart is empty!</h5>
+    <div className="fixed top-0 left-0 w-full bg-[#0000004b] h-screen z-40">
+      <div className="fixed top-0 right-0 h-full w-[85%] 800px:w-[28%] bg-white flex flex-col overflow-y-scroll justify-between shadow-lg">
+        {!cart || cart.length === 0 ? (
+          <div className="w-full h-screen flex items-center justify-center relative">
+            <RxCross1
+              size={25}
+              className="cursor-pointer absolute top-5 right-5"
+              onClick={() => setOpenCart(false)}
+            />
+            <h5 className="text-lg text-gray-600">Cart is empty!</h5>
           </div>
         ) : (
           <>
             <div>
-              <div className="flex  justify-center">
-                <h5 className=" text-[20px] font-[500]">My Cart</h5>
-              </div>
-
-              <div className="w-full flex  justify-end pt-5 pr-5">
+              <div className="w-full flex justify-between items-center p-4 border-b">
+                <h5 className="text-[20px] font-[500]">My Cart</h5>
                 <RxCross1
                   size={25}
                   className="cursor-pointer"
                   onClick={() => setOpenCart(false)}
                 />
               </div>
-              {/* item length */}
+
               <div className={`${styles.normalFlex} p-4`}>
                 <IoBagHandleOutline size={25} />
-                <h5 className="pl-2 text-[20px] font-[500]">
-                  {cart.length} items
+                <h5 className="pl-2 text-[18px] font-[500]">
+                  {cart.length} {cart.length === 1 ? "item" : "items"}
                 </h5>
               </div>
 
-              {/* cart Single Items */}
-              <br />
               <div className="w-full border-t">
-                {cart.map((item, index) => (
+                {cart.map((item) => (
                   <CartSingle
-                    key={index}
+                    key={item.id}
                     data={item}
                     quantityChangeHandler={quantityChangeHandler}
                     removeFromCartHandler={removeFromCartHandler}
@@ -136,28 +82,21 @@ const Cart = ({ setOpenCart }) => {
               </div>
             </div>
 
-            <div className="px-5 mb-3">
-              {/* checkout buttons */}
-              <Link to="/checkout">
-                <div
-                  className={`h-[45px] flex items-center justify-center w-[100%] bg-[#e44343] rounded-[5px]`}
-                >
-                  <h1 className="text-[#fff] text-[18px] font-[600]">
-                    Checkout Now (USD${totalPrice})
+            <div className="p-4 border-t space-y-3">
+              <Link to="/checkout" onClick={() => setOpenCart(false)}>
+                <div className="h-[45px] flex items-center justify-center w-full bg-[#e44343] rounded-[5px] hover:bg-[#c93535]">
+                  <h1 className="text-[#fff] text-[17px] font-[600]">
+                    Checkout Now (US${totalPrice})
                   </h1>
                 </div>
               </Link>
-            </div>
 
-            {/* Empty Cart button */}
-            <div className="px-5 mb-3">
               <button
-                className={`h-[45px] flex items-center justify-center w-[100%] bg-[#e44343] rounded-[5px]`}
+                type="button"
+                className="h-[42px] flex items-center justify-center w-full bg-gray-800 rounded-[5px] hover:bg-gray-900"
                 onClick={emptyCartHandler}
               >
-                <h1 className="text-[#fff] text-[18px] font-[600]">
-                  Empty Cart
-                </h1>
+                <span className="text-[#fff] text-[16px] font-[500]">Empty Cart</span>
               </button>
             </div>
           </>
@@ -168,65 +107,60 @@ const Cart = ({ setOpenCart }) => {
 };
 
 const CartSingle = ({ data, quantityChangeHandler, removeFromCartHandler }) => {
-  const [value, setValue] = useState(data.qty);
-  const totalPrice = (data.discount_price * value).toFixed(2);
+  const value = Number(data.qty || 1);
+  const price = Number(data.discount_price || 0);
+  const totalPrice = (price * value).toFixed(2);
 
   const increment = () => {
-    if (data.stock < value + 1) {
+    if (data.stock !== undefined && data.stock < value + 1) {
       toast.error("Product stock limited!");
     } else {
-      const newValue = value + 1;
-      const updateCartData = { ...data, qty: newValue };
-      quantityChangeHandler(updateCartData);
-      setValue(newValue);
+      quantityChangeHandler(data, value + 1);
     }
   };
 
   const decrement = () => {
-    if (value === 1) {
-      return;
-    }
-    const newValue = value - 1;
-    const updateCartData = { ...data, qty: newValue };
-    quantityChangeHandler(updateCartData);
-    setValue(newValue);
+    if (value <= 1) return;
+    quantityChangeHandler(data, value - 1);
   };
 
   return (
     <div className="border-b p-4">
-      <div className="w-full flex items-center">
-        <div>
+      <div className="w-full flex items-center justify-between gap-2">
+        <div className="flex flex-col items-center">
           <div
             className={`bg-[#e44343] border border-[#e4434373] rounded-full w-[25px] h-[25px] ${styles.normalFlex} justify-center cursor-pointer`}
-            onClick={() => increment(data)}
+            onClick={increment}
           >
-            <HiPlus size={18} color="#fff" />
+            <HiPlus size={16} color="#fff" />
           </div>
-          <span className="pl-[10px]">{value}</span>
+          <span className="py-1 text-sm font-medium">{value}</span>
           <div
             className="bg-[#a7abb14f] rounded-full w-[25px] h-[25px] flex items-center justify-center cursor-pointer"
-            onClick={() => decrement(data.qty)}
+            onClick={decrement}
           >
-            <HiOutlineMinus size={16} color="#7d879c" />
+            <HiOutlineMinus size={14} color="#7d879c" />
           </div>
         </div>
 
         <img
-          src={data.image_URL}
-          className="w-[130px] h-min ml-2 mr-2 rounded-[5px]"
-          alt=""
+          src={resolveAssetUrl(data.image_URL)}
+          className="w-[75px] h-[75px] object-cover rounded-[5px]"
+          alt={data.name}
         />
-        <div className="pl-[5px]">
-          <h1> ${data.name}</h1>
-          <h4 className="font-[400] text-[15px] text-[#00000082]">
-            ${data.discount_price} * {value}
+
+        <div className="flex-1 pl-2">
+          <h1 className="text-sm font-medium text-gray-800">{data.name}</h1>
+          <h4 className="font-[400] text-[13px] text-[#00000082]">
+            ${price.toFixed(2)} x {value}
           </h4>
-          <h4 className="font-[600] text-[17px] pt-[3px] text-[#d02222] font-Roboto">
+          <h4 className="font-[600] text-[15px] pt-[2px] text-[#d02222] font-Roboto">
             US${totalPrice}
           </h4>
         </div>
+
         <RxCross1
-          className="cursor-pointer"
+          className="cursor-pointer text-gray-500 hover:text-red-600"
           size={18}
           onClick={() => removeFromCartHandler(data)}
         />
@@ -235,4 +169,4 @@ const CartSingle = ({ data, quantityChangeHandler, removeFromCartHandler }) => {
   );
 };
 
-export default Cart; 
+export default Cart;

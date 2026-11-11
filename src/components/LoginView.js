@@ -1,112 +1,103 @@
 import React, { useState } from "react";
 import { RxCross1 } from "react-icons/rx";
-import logo5 from "../logo5.png";
 import { Link, useNavigate } from "react-router-dom";
-import { backendURL } from "../config";
+import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
+import { apiRequest } from "../utils/api";
+import { loginSuccessAction } from "../redux/actions/user";
 
-
-const LoginView = ({ setOpen, data }) => {
+const LoginView = ({ setOpen }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate(); // Get navigate object
+  const [errorMessage, setErrorMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleClose = () => {
-    setOpen(false); // Close the LoginView modal
+    setOpen(false);
   };
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
+    setErrorMessage("");
+    setSubmitting(true);
 
     try {
-      // Construct the complete backend URL dynamically
-      const loginURL = `${backendURL}/login`;
-      console.log(loginURL);
-
-      // Send login credentials to the server
-      const response = await fetch(loginURL, {
+      const data = await apiRequest("/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: { email, password },
       });
 
-      // Check if login was successful
-      if (response.ok) {
-        const data = await response.json(); // Parse response JSON
-        // Set login status in local storage
-        localStorage.setItem("isLoggedIn", true);
-        // Store user's email and full name in local storage for easy access
-        localStorage.setItem("email", data.email);
-        localStorage.setItem("fullName", data.fullName);
-        // Redirect to the dashboard or home page after successful login
-        console.log("Login successful");
-        navigate("/");
-      } else {
-        // Handle login error
-        const errorMessage = await response.text();
-        console.error("Error during login:", errorMessage);
-        // You can display an error message to the user here
-      }
+      await dispatch(loginSuccessAction(data));
+      toast.success("Login successful!");
+      setOpen(false);
+      navigate("/");
     } catch (error) {
-      // Handle any errors that occur during login
-      console.error("Error during login:", error.message);
+      const msg = error.message || "Invalid email or password";
+      setErrorMessage(msg);
+      toast.error(msg);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-
-
   return (
-    <div className="bg-[#fff]">
-      <div className="fixed w-full h-screen top-0 left-0 bg-[#00000030] z-40 flex items-center justify-center">
-        <div className="w-[40%] 800px:w-[35%] h-[80vh] overflow-y-scroll 800px:h-[55vh] bg-white rounded-md shadow-sm relative p-4">
-          <RxCross1
-            size={25}
-            className="absolute cursor-pointer right-3 top-3 z-50"
-            onClick={handleClose} // Modified onClick handler
-          />
-          <div className="block w-full 800px:flex">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-Black">
-                Login to your account
-              </h2>
-              <div className="w-[90%] mt-2 pl-5">
-                <form onSubmit={handleLogin}>
-                  <label>Email:</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                  <label>Password:</label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <button type="submit" className="custom-button">
-                    Login
-                  </button>
-                  <div className="flex">
-                    <h4 style={{ marginRight: "8px", marginTop: "20px" }}>
-                      Don't have any account?
-                    </h4>
-                    <Link to="/signup" className="text-blue-600 mt-5">
-                      Sign Up
-                    </Link>
-                  </div>
-                </form>
-              </div>
-            </div>
+    <div className="fixed w-full h-screen top-0 left-0 bg-[#0000004b] z-50 flex items-center justify-center">
+      <div className="w-[90%] 800px:w-[35%] max-w-md bg-white rounded-md shadow-lg relative p-6">
+        <RxCross1
+          size={24}
+          className="absolute cursor-pointer right-4 top-4 z-50"
+          onClick={handleClose}
+        />
+        <h2 className="text-2xl font-bold text-center text-gray-900 mb-4">
+          Login to your account
+        </h2>
+        {errorMessage && (
+          <div className="mb-3 p-2 rounded bg-red-100 text-red-700 text-sm">
+            {errorMessage}
           </div>
-        </div>
+        )}
+        <form onSubmit={handleLogin} className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium mb-1">Email:</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border rounded px-3 py-2"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Password:</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border rounded px-3 py-2"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="custom-button w-full disabled:opacity-60"
+          >
+            {submitting ? "Logging in..." : "Login"}
+          </button>
+          <div className="flex items-center justify-center pt-2 text-sm">
+            <span className="mr-2">Don't have any account?</span>
+            <Link
+              to="/Signup"
+              onClick={handleClose}
+              className="text-blue-600 font-medium"
+            >
+              Sign Up
+            </Link>
+          </div>
+        </form>
       </div>
-
     </div>
   );
 };

@@ -1,21 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import { RxCross1 } from "react-icons/rx";
-import { IoBagHandleOutline } from "react-icons/io5";
 import styles from "../styles/styles";
-import { Link } from "react-router-dom";
 import { BsCartPlus } from "react-icons/bs";
 import { AiOutlineHeart } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
 import { removeFromWishlist } from "../redux/actions/wishlist";
 import { addTocart } from "../redux/actions/cart";
 import { toast } from "react-toastify";
-import { backendURL } from "../config";
-
-const isLoggedIn = localStorage.getItem('isLoggedIn');
+import { resolveAssetUrl } from "../utils/api";
 
 const Wishlist = ({ setOpenWishlist }) => {
   const { wishlist } = useSelector((state) => state.wishlist);
-  const { cartItems } = useSelector((state) => state.cart); // Assuming the cart items are stored in the Redux store under cartItems
+  const { cart } = useSelector((state) => state.cart);
+  const { isAuthenticated } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   const removeFromWishlistHandler = (data) => {
@@ -23,144 +20,104 @@ const Wishlist = ({ setOpenWishlist }) => {
   };
 
   const addToCartHandler = async (data) => {
-    if (!isLoggedIn) {
-      // If user is not logged in, show prompt to login
+    const loggedIn = isAuthenticated && localStorage.getItem("customerToken");
+    if (!loggedIn) {
       toast.error("Please log in to add items to your cart.");
-      return; // Prevent adding to cart if user is not logged in
+      return;
     }
 
-    // Check if the item is already in the cart
-    const isItemExists = cartItems.some((item) => item.id === data.id);
-
+    const isItemExists = cart && cart.some((item) => item.id === data.id);
     if (isItemExists) {
       toast.error("Item already in cart!");
-    } else {
-      if (data.stock < 1) {
-        toast.error("Product stock limited!");
-      } else {
-        const cartData = { ...data };
-        let email = window.localStorage.getItem("email");
-        try {
-          // Construct the URL for adding to cart
-          const addToCartURL = `${backendURL}/add-to-cart`;
+      return;
+    }
+    if (data.stock < 1) {
+      toast.error("Product stock limited!");
+      return;
+    }
 
-          // Send cart item data to the backend
-          const response = await fetch(addToCartURL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              // Include any necessary authentication tokens or headers here
-            },
-            body: JSON.stringify({ item: cartData, email }),
-          });
-
-          // Check if request was successful
-          if (response.ok) {
-            // Dispatch action to add item to Redux store
-            dispatch(addTocart(cartData));
-
-            toast.success("Item added to cart successfully!");
-          } else {
-            // Handle error response from backend
-            const errorMessage = await response.text();
-            toast.error(`Error: ${errorMessage}`);
-          }
-        } catch (error) {
-          // Handle network errors or exceptions
-          console.error("Error adding to cart:", error);
-          toast.error("Error adding to cart. Please try again later.");
-        }
-      }
+    try {
+      await dispatch(addTocart(data, 1));
+      toast.success("Item added to cart successfully!");
+    } catch (error) {
+      toast.error(error.message || "Error adding to cart.");
     }
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full bg-[#0000004b] h-screen z-10">
-      <div className="fixed top-0 right-0 h-full w-[80%] 800px:w-[25%] bg-white flex flex-col overflow-y-scroll justify-between shadow-sm">
-        {wishlist && wishlist.length === 0 ? (
-          <div className="w-full h-screen flex items-center justify-center">
-            <div className="flex w-full justify-end pt-5 pr-5 fixed top-3 right-3">
+    <div className="fixed top-0 left-0 w-full bg-[#0000004b] h-screen z-40">
+      <div className="fixed top-0 right-0 h-full w-[85%] 800px:w-[28%] bg-white flex flex-col overflow-y-scroll justify-between shadow-lg">
+        {!wishlist || wishlist.length === 0 ? (
+          <div className="w-full h-screen flex items-center justify-center relative">
+            <RxCross1
+              size={25}
+              className="cursor-pointer absolute top-5 right-5"
+              onClick={() => setOpenWishlist(false)}
+            />
+            <h5 className="text-lg text-gray-600">Wishlist is empty!</h5>
+          </div>
+        ) : (
+          <div>
+            <div className="w-full flex justify-between items-center p-4 border-b">
+              <div className={`${styles.normalFlex}`}>
+                <AiOutlineHeart size={25} />
+                <h5 className="pl-2 text-[18px] font-[500]">
+                  {wishlist.length} {wishlist.length === 1 ? "item" : "items"}
+                </h5>
+              </div>
               <RxCross1
                 size={25}
                 className="cursor-pointer"
                 onClick={() => setOpenWishlist(false)}
               />
             </div>
-            <h5>wishlist Items is empty!</h5>
-          </div>
-        ) : (
-          <>
-            <div>
-              <div className="w-full flex  justify-end pt-5 pr-5">
-                <RxCross1
-                  size={25}
-                  className="cursor-pointer"
-                  onClick={() => setOpenWishlist(false)}
-                />
-              </div>
-              {/* item length */}
-              <div className={`${styles.normalFlex} p-4`}>
-                <AiOutlineHeart size={25} />
-                <h5 className="pl-2 text-[20px] font-[500]">
-                  {wishlist && wishlist.length} items
-                </h5>
-              </div>
 
-              {/* cart Single Items */}
-              <br />
-                <div className="w-full border-t">
-                  {wishlist &&
-                    wishlist.map((i, index) => (
-                      <CartSingle
-                        key={index}
-                        data={i}
-                        removeFromWishlistHandler={removeFromWishlistHandler}
-                        addToCartHandler={addToCartHandler}
-                        cart={cartItems} // Pass the cartItems prop down to CartSingle as cart
-                      />
-                    ))}
-                </div>
+            <div className="w-full border-t">
+              {wishlist.map((i) => (
+                <WishlistSingle
+                  key={i.id}
+                  data={i}
+                  removeFromWishlistHandler={removeFromWishlistHandler}
+                  addToCartHandler={addToCartHandler}
+                />
+              ))}
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
   );
 };
 
-const CartSingle = ({ data, removeFromWishlistHandler, addToCartHandler, cart }) => {
-  const [value, setValue] = useState(1);
-  const totalPrice = data.discount_price * value;
+const WishlistSingle = ({ data, removeFromWishlistHandler, addToCartHandler }) => {
   return (
-    <div className="border-b p-6">
-      <div className="w-full flex items-center">
+    <div className="border-b p-4">
+      <div className="w-full flex items-center justify-between gap-2">
         <RxCross1
-          className="cursor-pointer"
+          className="cursor-pointer text-gray-500 hover:text-red-600"
           size={18}
           onClick={() => removeFromWishlistHandler(data)}
         />
         <img
-          src={data.image_URL}
-          className="w-[130px] h-min ml-2 mr-2 rounded-[5px]"
+          src={resolveAssetUrl(data.image_URL)}
+          alt={data.name}
+          className="w-[75px] h-[75px] object-cover rounded-[5px]"
         />
-
-        <div className="pl-[3px]">
-          <h1> ${data.name}</h1>
-
-          <h4 className="font-[600] text-[17px] pt-[3px] text-[#d02222] font-Roboto">
-            US${totalPrice}
+        <div className="flex-1 pl-2">
+          <h1 className="text-sm font-medium text-gray-800">{data.name}</h1>
+          <h4 className="font-[600] text-[15px] pt-[3px] text-[#d02222] font-Roboto">
+            US${Number(data.discount_price || 0).toFixed(2)}
           </h4>
         </div>
-        <div>
-          <BsCartPlus
-            size={20}
-            className="cursor-pointer ml-5"
-            title="Add to cart"
-            onClick={() => addToCartHandler(data, cart)}
-          />
-        </div>
+        <BsCartPlus
+          size={22}
+          className="cursor-pointer text-gray-700 hover:text-[#051d40]"
+          title="Add to cart"
+          onClick={() => addToCartHandler(data)}
+        />
       </div>
     </div>
   );
 };
+
 export default Wishlist;

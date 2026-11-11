@@ -14,157 +14,156 @@ import {
   removeFromWishlist,
 } from "../../redux/actions/wishlist";
 import { toast } from "react-toastify";
-import { backendURL } from "../../config";
 import Ratings from "./Ratings";
+import { resolveAssetUrl } from "../../utils/api";
 
 const ProductDetails = ({ data }) => {
   const { cart } = useSelector((state) => state.cart);
   const { wishlist } = useSelector((state) => state.wishlist);
+  const { isAuthenticated } = useSelector((state) => state.user);
   const [count, setCount] = useState(1);
   const [click, setClick] = useState(false);
   const [select, setSelect] = useState(0);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // New state to track user's login status
+
+  const isLoggedIn = isAuthenticated && Boolean(localStorage.getItem("customerToken"));
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
-    setIsLoggedIn(!!isLoggedIn); // Convert to boolean
-  }, []);
+    if (data && wishlist && wishlist.find((i) => i.id === data.id)) {
+      setClick(true);
+    } else {
+      setClick(false);
+    }
+  }, [wishlist, data]);
 
-  const removeFromWishlistHandler = (data) => {
-    setClick(!click);
-    dispatch(removeFromWishlist(data));
+  const removeFromWishlistHandler = (item) => {
+    setClick(false);
+    dispatch(removeFromWishlist(item));
   };
 
-  const addToWishlistHandler = (data) => {
-    setClick(!click);
-    dispatch(addToWishlist(data));
+  const addToWishlistHandler = (item) => {
+    setClick(true);
+    dispatch(addToWishlist(item));
   };
 
   const addToCartHandler = async (id) => {
     if (!isLoggedIn) {
-      // If user is not logged in, show prompt to login
       toast.error("Please log in to add items to your cart.");
-      return; // Prevent adding to cart if user is not logged in
+      return;
     }
 
     const isItemExists = cart && cart.find((i) => i.id === id);
     if (isItemExists) {
       toast.error("Item already in cart!");
-    } else {
-      if (data.stock < 1) {
-        toast.error("Product stock limited!");
-      } else {
-        const cartData = { ...data };
-        let email = window.localStorage.getItem("email")
-        console.log("IDHRRR", cartData)
-        try {
-          // Construct the URL for adding to cart
-          const addToCartURL = `${backendURL}/add-to-cart`;
+      return;
+    }
 
-          // Send cart item data to the backend
-          const response = await fetch(addToCartURL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              // Include any necessary authentication tokens or headers here
-            },
-            body: JSON.stringify({ item: cartData, email }),
-          });
+    if (data.stock < 1) {
+      toast.error("Product stock limited!");
+      return;
+    }
 
-          // Check if request was successful
-          if (response.ok) {
-            // Dispatch action to add item to Redux store
-            dispatch(addTocart(cartData));
-
-            toast.success("Item added to cart successfully!");
-          } else {
-            // Handle error response from backend
-            const errorMessage = await response.text();
-            toast.error(`Error: ${errorMessage}`);
-          }
-        } catch (error) {
-          // Handle network errors or exceptions
-          console.error("Error adding to cart:", error);
-          toast.error("Error adding to cart. Please try again later.");
-        }
-      }
+    try {
+      await dispatch(addTocart(data, count));
+      toast.success("Item added to cart successfully!");
+    } catch (error) {
+      toast.error(error.message || "Error adding to cart. Please try again later.");
     }
   };
 
   const incrementCount = () => {
+    if (data?.stock && count >= data.stock) {
+      toast.error("Maximum available stock reached.");
+      return;
+    }
     setCount(count + 1);
   };
 
   const decrementCount = () => {
-    if (count > 1) {
-      setCount(count - 1);
-    }
+    if (count > 1) setCount(count - 1);
   };
 
-  // const totalReviewsLength = () => {
-  //   product &&
-  //     product.reduce((acc, product) => acc + product.reviews.length, 0);
-  // };
   const handleMessageSubmit = () => {
-    navigate("/inbox?conversation=507ebjver884ehfdjeriv84");
+    if (!isLoggedIn) {
+      toast.info("Please log in to message the vendor.");
+      navigate("/LoginPage");
+      return;
+    }
+    navigate(
+      `/inbox?vendorId=${data.shop?.id || data.vendorId || 1}&vendorName=${encodeURIComponent(
+        data.shop?.name || "Vendor"
+      )}`
+    );
   };
+
+  const gallery =
+    data?.images && data.images.length > 0 ? data.images : [data?.image_URL];
 
   return (
     <div className="bg-white">
       {data ? (
-        <div className={`${styles.section} w-[90%] 800px:w-[80%]  `}>
+        <div className={`${styles.section} w-[90%] 800px:w-[80%]`}>
           <div className="w-full py-5">
-            <div className="block w-full 800px:flex">
+            <div className="block w-full 800px:flex gap-8">
               <div className="w-full 800px:w-[50%]">
-                <img src={data.image_URL} className="w-[80%]" />
-                <div className="w-full flex">
-                  <div
-                    className={`cursor-pointer ${select === 0 ? "border" : ""}`}
-                    onClick={() => setSelect(0)}
-                  >
-                    <img src={data.image_URL} className="h-[200px]" />
-                  </div>
-                  <div
-                    className={`cursor-pointer ${select === 1 ? "border" : ""}`}
-                    onClick={() => setSelect(1)}
-                  >
-                    <img src={data.image_URL} className="h-[200px]" />
-                  </div>
+                <img
+                  src={resolveAssetUrl(gallery[select] || data.image_URL)}
+                  alt={data.name}
+                  className="w-[85%] max-h-[420px] object-contain rounded"
+                />
+                <div className="w-full flex gap-3 mt-4 flex-wrap">
+                  {gallery.map((imgUrl, idx) => (
+                    <div
+                      key={idx}
+                      className={`cursor-pointer rounded overflow-hidden ${
+                        select === idx ? "border-2 border-[#051d40]" : "border"
+                      }`}
+                      onClick={() => setSelect(idx)}
+                    >
+                      <img
+                        src={resolveAssetUrl(imgUrl)}
+                        alt=""
+                        className="h-[100px] w-[100px] object-cover"
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
 
               <div className="w-full 800px:w-[50%] pt-5">
                 <h1 className={`${styles.productTitle}`}>{data.name}</h1>
-                <p>{data.description}</p>
-                <div className="flex pt-3">
+                <p className="text-gray-600 mt-2">{data.description}</p>
+                <div className="flex pt-4 items-center">
                   <h4 className={`${styles.productDiscountPrice}`}>
-                    {data.discount_price}$
+                    ${data.discount_price}
                   </h4>
                   <h3 className={`${styles.price}`}>
-                    {data.price ? data.price + "$" : null}
+                    {data.price && data.price !== data.discount_price ? `$${data.price}` : null}
                   </h3>
                 </div>
+                <p className="text-sm text-green-600 mt-2">
+                  Stock available: {data.stock} | Total sold: {data.total_sell || 0}
+                </p>
 
-                <div className="flex items-center mt-12 justify-between pr-3">
+                <div className="flex items-center mt-8 justify-between pr-3">
                   <div>
                     <button
-                      className="bg-gradient-to-r from-teal-400 to-teal-500 text-white font-bold rounded-l px-4 py-2 shadow-lg hover:opacity-75 transition duration-300 ease-in-out"
+                      type="button"
+                      className="bg-gradient-to-r from-teal-400 to-teal-500 text-white font-bold rounded-l px-4 py-2 shadow-lg hover:opacity-75 transition"
                       onClick={decrementCount}
                     >
-                      {" "}
-                      -{" "}
+                      -
                     </button>
                     <span className="bg-gray-200 text-gray-800 font-medium px-4 py-[9px]">
                       {count}
                     </span>
                     <button
-                      className="bg-gradient-to-r from-teal-400 to-teal-500 text-white font-bold rounded-l px-4 py-2 shadow-lg hover:opacity-75 transition duration-300 ease-in-out"
+                      type="button"
+                      className="bg-gradient-to-r from-teal-400 to-teal-500 text-white font-bold rounded-r px-4 py-2 shadow-lg hover:opacity-75 transition"
                       onClick={incrementCount}
                     >
-                      {" "}
-                      +{" "}
+                      +
                     </button>
                   </div>
                   <div>
@@ -173,7 +172,7 @@ const ProductDetails = ({ data }) => {
                         size={30}
                         className="cursor-pointer"
                         onClick={() => removeFromWishlistHandler(data)}
-                        color={click ? "red" : "#333"}
+                        color="red"
                         title="Remove from wishlist"
                       />
                     ) : (
@@ -181,7 +180,7 @@ const ProductDetails = ({ data }) => {
                         size={30}
                         className="cursor-pointer"
                         onClick={() => addToWishlistHandler(data)}
-                        color={click ? "red" : "#333"}
+                        color="#333"
                         title="Add to wishlist"
                       />
                     )}
@@ -195,22 +194,27 @@ const ProductDetails = ({ data }) => {
                     Add to cart <AiOutlineShoppingCart className="ml-1" />
                   </span>
                 </div>
-                <div className="flex items-center pt-8">
-                  <img
-                    src={data.shop.shop_avatar.url}
-                    className="w-[50px] h-[50px] rounded-full mr-2"
-                  />
-                  <div className="pr-8">
-                    <h3 className={`${styles.shop_name} pb-1 pt-1`}>
-                      {data.shop.name}
-                    </h3>
-                    <h5 className="pb-3 text-[15px]">
-                      {" "}
-                      ({data.shop.ratings}) Ratings
-                    </h5>
-                  </div>
+                <div className="flex items-center pt-8 flex-wrap gap-4">
+                  <Link
+                    to={`/shop/${data.shop?.id || data.vendorId || 1}`}
+                    className="flex items-center"
+                  >
+                    <img
+                      src={resolveAssetUrl(data.shop?.shop_avatar?.url)}
+                      alt=""
+                      className="w-[50px] h-[50px] rounded-full mr-2 object-cover"
+                    />
+                    <div className="pr-4">
+                      <h3 className={`${styles.shop_name} pb-1 pt-1`}>
+                        {data.shop?.name}
+                      </h3>
+                      <h5 className="text-[15px]">
+                        ({data.shop?.ratings || 4.5}) Ratings
+                      </h5>
+                    </div>
+                  </Link>
                   <div
-                    className={`${styles.button} bg-[#6443d1] mt-4 !rounded !h-11`}
+                    className={`${styles.button} bg-[#6443d1] !rounded !h-11`}
                     onClick={handleMessageSubmit}
                   >
                     <span className="text-white flex items-center">
@@ -231,154 +235,120 @@ const ProductDetails = ({ data }) => {
   );
 };
 
-const ProductDetailsInfo = ({ data, totalReviewsLength }) => {
+const ProductDetailsInfo = ({ data }) => {
   const [active, setActive] = useState(1);
   return (
-    <div className="bg-[#f5f6fb] px-3 800px:px-10 py-2 rounded ">
-      <div className="w-full flex justify-between border-b pt-10 pb-2">
+    <div className="bg-[#f5f6fb] px-3 800px:px-10 py-4 rounded">
+      <div className="w-full flex justify-between border-b pt-6 pb-2">
         <div className="relative">
           <h5
-            className={
-              "text-[#000] text-[18px] px-1 leading-5 font-[600] cursor-pointer 800px:text-[20px]"
-            }
+            className="text-[#000] text-[18px] px-1 leading-5 font-[600] cursor-pointer 800px:text-[20px]"
             onClick={() => setActive(1)}
           >
             Product Details
           </h5>
-          {active === 1 ? (
-            <div className={`${styles.active_indicator}`} />
-          ) : null}
+          {active === 1 ? <div className={`${styles.active_indicator}`} /> : null}
         </div>
 
         <div className="relative">
           <h5
-            className={
-              "text-[#000] text-[18px] px-1 leading-5 font-[600] cursor-pointer 800px:text-[20px]"
-            }
+            className="text-[#000] text-[18px] px-1 leading-5 font-[600] cursor-pointer 800px:text-[20px]"
             onClick={() => setActive(2)}
           >
-            Product Reviews
+            Product Reviews ({data?.reviews?.length || 0})
           </h5>
-          {active === 2 ? (
-            <div className={`${styles.active_indicator}`} />
-          ) : null}
+          {active === 2 ? <div className={`${styles.active_indicator}`} /> : null}
         </div>
 
         <div className="relative">
           <h5
-            className={
-              "text-[#000] text-[18px] px-1 leading-5 font-[600] cursor-pointer 800px:text-[20px]"
-            }
+            className="text-[#000] text-[18px] px-1 leading-5 font-[600] cursor-pointer 800px:text-[20px]"
             onClick={() => setActive(3)}
           >
             Vendor Information
           </h5>
-          {active === 3 ? (
-            <div className={`${styles.active_indicator}`} />
-          ) : null}
+          {active === 3 ? <div className={`${styles.active_indicator}`} /> : null}
         </div>
       </div>
 
       {active === 1 ? (
-        <>
-          <p className="py-2 text-[18px] leading-8 pb-10 whitespace-pre-line">
-            Product details provide comprehensive information about a particular
-            item, aiding consumers in making informed purchasing decisions.
-            These details typically include specifics such as product
-            dimensions, materials, features, and functionalities. They may also
-            encompass pricing information, including discounts or special
-            offers, as well as availability and stock levels.
-          </p>
-          <p className="py-2 text-[18px] leading-8 pb-10 whitespace-pre-line">
-            Additionally, product details often incorporate descriptive text to
-            highlight key selling points, such as unique attributes, benefits,
-            and intended usage scenarios. In essence, product details serve as a
-            vital tool for consumers to evaluate the suitability of a product
-            based on their needs and preferences, ultimately facilitating a
-            seamless shopping experience.
-          </p>
-          <p className="py-2 text-[18px] leading-8 pb-10 whitespace-pre-line">
-            With product details, shoppers can confidently assess whether a
-            product meets their requirements and preferences. From understanding
-            its technical specifications to evaluating its suitability for
-            specific needs, these details empower consumers to make informed
-            choices. Whether browsing online or in-store, clear and concise
-            product details play a crucial role in enhancing the shopping
-            experience, enabling customers to find the perfect product with
-            ease.
-          </p>
-        </>
+        <div className="py-4 text-[17px] leading-8 whitespace-pre-line text-gray-700">
+          <p>{data.description}</p>
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm bg-white p-4 rounded">
+            <div><strong>Category:</strong> {data.category}</div>
+            <div><strong>Stock:</strong> {data.stock} units</div>
+            {data.capacity && <div><strong>Capacity:</strong> {data.capacity}</div>}
+            {data.warranty && <div><strong>Warranty:</strong> {data.warranty}</div>}
+            {data.tags && <div><strong>Tags:</strong> {data.tags}</div>}
+          </div>
+        </div>
       ) : null}
 
       {active === 2 ? (
-        <div className="w-full justify-center min-h-[40vh] flex items-center">
-          {data &&
+        <div className="w-full min-h-[25vh] py-4 space-y-4">
+          {data?.reviews && data.reviews.length > 0 ? (
             data.reviews.map((item, index) => (
-              <div className="w-full flex my-2">
+              <div className="w-full flex items-start bg-white p-3 rounded shadow-sm" key={index}>
                 <img
-                  src={`${item.avatar}`}
+                  src={resolveAssetUrl(item.avatar)}
                   alt=""
-                  className="w-[50px] h-[50px] rounded-full"
+                  className="w-[45px] h-[45px] rounded-full object-cover"
                 />
-                <div className="pl-2 ">
+                <div className="pl-3">
                   <div className="w-full flex items-center">
-                    <h1 className="font-[500] mr-3">{item.user}</h1>
-                    <Ratings rating={data?.ratings} />
+                    <h1 className="font-[600] mr-3">{item.user}</h1>
+                    <Ratings rating={item.rating || data?.ratings} />
                   </div>
-                  <p>{item.comment}</p>
+                  <p className="text-gray-700 mt-1">{item.comment}</p>
                 </div>
               </div>
-            ))}
-          <div className="w-full flex justify-center">
-            {data && data.reviews.length === 0 && (
-              <h5>No Reviews have for this product!</h5>
-            )}
-          </div>
+            ))
+          ) : (
+            <div className="w-full flex justify-center py-8">
+              <h5>No reviews yet for this product!</h5>
+            </div>
+          )}
         </div>
       ) : null}
 
       {active === 3 && (
         <div className="w-full block 800px:flex p-5">
-          <div className="w-full  800px:w-[50%]">
+          <div className="w-full 800px:w-[50%]">
             <div className="flex items-center">
               <img
-                src={data.shop.shop_avatar.url}
-                className="w-[50px] h-[50px] rounded-full"
+                src={resolveAssetUrl(data.shop?.shop_avatar?.url)}
+                alt=""
+                className="w-[50px] h-[50px] rounded-full object-cover"
               />
               <div className="pl-3">
-                <h3 className={`${styles.shop_name} `}>{data.shop.name}</h3>
-                <h5 className=" pb-2 text-[15px]">
-                  {data.shop.ratings} Ratings
-                </h5>
+                <h3 className={`${styles.shop_name}`}>{data.shop?.name}</h3>
+                <h5 className="pb-2 text-[15px]">{data.shop?.ratings || 4.5} Ratings</h5>
               </div>
             </div>
-            <p className="pt-2">
-              Product details serve as a powerful marketing tool for sellers,
-              allowing them to highlight the unique features and benefits of
-              their products. By providing clear and accurate information,
-              sellers can effectively communicate the value proposition of their
-              offerings to potential customers.
+            <p className="pt-2 text-gray-700">
+              {data.shop?.description ||
+                "Verified solar equipment vendor on Energy Matrix Marketplace."}
             </p>
           </div>
 
-          <div className="w-full  800px:w-[50%] mt-5 800px:mt-0 800px:flex flex-col items-end">
+          <div className="w-full 800px:w-[50%] mt-5 800px:mt-0 800px:flex flex-col items-end">
             <div className="text-left">
               <h5 className="font-[600]">
-                joined on: <span className="font-[500]">12 January, 2023</span>
+                Joined on:{" "}
+                <span className="font-[500]">
+                  {data.shop?.createdAt ? data.shop.createdAt.slice(0, 10) : "2023-03-15"}
+                </span>
               </h5>
               <h5 className="font-[600] pt-3">
-                Total Products: <span className="font-[500]">1,223</span>
+                Total Products:{" "}
+                <span className="font-[500]">{data.shop?.totalProducts ?? 1}</span>
               </h5>
               <h5 className="font-[600] pt-3">
                 Total Reviews:{" "}
-                <span className="font-[500]">
-                  {/* {totalReviewsLength} */} 123
-                </span>
+                <span className="font-[500]">{data.shop?.totalReviews ?? 0}</span>
               </h5>
-              <Link to="/">
-                <div
-                  className={`${styles.button} !rounded-[4px] !h-[39.5px] mt-3`}
-                >
+              <Link to={`/shop/${data.shop?.id || data.vendorId || 1}`}>
+                <div className={`${styles.button} !rounded-[4px] !h-[39.5px] mt-3`}>
                   <h4 className="text-white">Visit Shop</h4>
                 </div>
               </Link>
@@ -389,4 +359,5 @@ const ProductDetailsInfo = ({ data, totalReviewsLength }) => {
     </div>
   );
 };
+
 export default ProductDetails;

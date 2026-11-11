@@ -1,255 +1,278 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { categoriesData } from "../../static/data";
 import { AiOutlinePlusCircle } from "react-icons/ai";
-import { createProduct } from "../../redux/actions/product";
+import { createProduct, getAllProducts } from "../../redux/actions/product";
 import { toast } from "react-toastify";
-import { backendURL } from "../../config";
+
+const productCategories = [
+  "Solar Panels",
+  "Solar Inverters",
+  "Solar Batteries",
+  "Solar Lights",
+  "Solar Chargers",
+  "Solar Water Heaters",
+  "Solar Fans",
+  "Solar Garden Lights",
+  ...(categoriesData || []).map((c) => c.title),
+];
 
 const CreateProduct = () => {
-    const { seller } = useSelector((state) => state.seller);
-    const { success, error } = useSelector((state) => state.products);
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+  const { seller } = useSelector((state) => state.seller);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-    const [images, setImages] = useState([]);
-    const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [category, setCategory] = useState("");
-    const [tags, setTags] = useState("");
-    const [originalPrice, setOriginalPrice] = useState();
-    const [discountPrice, setDiscountPrice] = useState();
-    const [stock, setStock] = useState();
+  const [images, setImages] = useState([]);
+  const [files, setFiles] = useState([]);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [type, setType] = useState("product");
+  const [tags, setTags] = useState("");
+  const [originalPrice, setOriginalPrice] = useState("");
+  const [discountPrice, setDiscountPrice] = useState("");
+  const [stock, setStock] = useState("");
+  const [capacity, setCapacity] = useState("");
+  const [warranty, setWarranty] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-    useEffect(() => {
-        if (error) {
-            toast.error(error);
+  const handleImageChange = (e) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    setFiles(selectedFiles);
+    setImages([]);
+
+    selectedFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.readyState === 2) {
+          setImages((old) => [...old, reader.result]);
         }
-        if (success) {
-            toast.success("Product created successfully!");
-            navigate("/dashboard");
-            window.location.reload();
-        }
-    }, [dispatch, error, success]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
 
-    const handleImageChange = (e) => {
-        const files = Array.from(e.target.files);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        setImages([]);
+    if (!name.trim() || !description.trim() || !category || category === "Choose a category") {
+      toast.error("Please fill out name, description, and category.");
+      return;
+    }
 
-        files.forEach((file) => {
-            const reader = new FileReader();
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append("name", name.trim());
+      formData.append("description", description.trim());
+      formData.append("category", category);
+      formData.append("type", type);
+      formData.append("tags", tags);
+      formData.append("originalPrice", originalPrice || discountPrice);
+      formData.append("discountPrice", discountPrice);
+      formData.append("stock", stock);
+      formData.append("capacity", capacity);
+      formData.append("warranty", warranty);
+      formData.append("vendorEmail", seller?.contactEmail || localStorage.getItem("vendorEmail") || "");
+      formData.append("vendorName", seller?.companyName || localStorage.getItem("vendorCompany") || "");
 
-            reader.onload = () => {
-                if (reader.readyState === 2) {
-                    setImages((old) => [...old, reader.result]);
-                }
-            };
-            reader.readAsDataURL(file);
-        });
-    };
+      files.forEach((file) => {
+        formData.append("productPictures", file);
+      });
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+      await dispatch(createProduct(formData));
+      dispatch(getAllProducts());
+      toast.success("Product created successfully!");
+      navigate("/dashboard-products");
+    } catch (error) {
+      toast.error(error.message || "Failed to create product.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-        // Fetch vendor data from localStorage
-        const vendorEmail = localStorage.getItem('vendorEmail');
-        const vendorName = localStorage.getItem('vendorCompany');
-
-        // Create a new FormData object to store form data
-        const formData = new FormData();
-
-        // Append form fields to FormData object
-        formData.append("name", name);
-        formData.append("description", description);
-        formData.append("category", category);
-        formData.append("tags", tags);
-        formData.append("originalPrice", originalPrice);
-        formData.append("discountPrice", discountPrice);
-        formData.append("stock", stock);
-        formData.append("vendorEmail", vendorEmail);
-        formData.append("vendorName", vendorName);
-
-        // Append images to FormData object
-        images.forEach((image, index) => {
-            formData.append(`image${index}`, image);
-        });
-
-        // Log the form data before sending the request
-        console.log("Form Data: ", formData);
-        
-        const createProductUrl = `${backendURL}/create-product`;
-
-
-        try {
-            const response = await fetch(createProductUrl, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.ok) {
-                toast.success("Product created successfully!");
-                navigate("/dashboard");
-                window.location.reload();
-            } else {
-                const data = await response.json();
-                if (data && data.error) {
-                    toast.error(data.error);
-                } else {
-                    toast.error("Failed to create product.");
-                }
-            }
-        } catch (error) {
-            console.error("Error creating product:", error);
-            toast.error("Failed to create product.");
-        }
-    };
-
-    return (
-        <div className="w-[90%] 800px:w-[50%] bg-white  shadow h-[80vh] rounded-[4px] p-3 overflow-y-scroll">
-            <h5 className="text-[30px] font-Poppins text-center">Create Product</h5>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label className="pb-2">
-                        Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={name}
-                        className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Enter your product name..."
-                    />
-                </div>
-                <br />
-                <div>
-                    <label className="pb-2">
-                        Description <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                        cols="30"
-                        required
-                        rows="8"
-                        type="text"
-                        name="description"
-                        value={description}
-                        className="mt-2 appearance-none block w-full pt-2 px-3 border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Enter your product description..."
-                    ></textarea>
-                </div>
-                <br />
-                <div>
-                    <label className="pb-2">
-                        Category <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                        className="w-full mt-2 border h-[35px] rounded-[5px]"
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                    >
-                        <option value="Choose a category">Choose a category</option>
-                        {categoriesData &&
-                            categoriesData.map((i) => (
-                                <option value={i.title} key={i.title}>
-                                    {i.title}
-                                </option>
-                            ))}
-                    </select>
-                </div>
-
-                <div>
-                    <label className="pb-2">Tags</label>
-                    <input
-                        type="text"
-                        name="tags"
-                        value={tags}
-                        className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        onChange={(e) => setTags(e.target.value)}
-                        placeholder="Enter your product tags..."
-                    />
-                </div>
-                <br />
-                <div>
-                    <label className="pb-2">Original Price</label>
-                    <input
-                        type="number"
-                        name="price"
-                        value={originalPrice}
-                        className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        onChange={(e) => setOriginalPrice(e.target.value)}
-                        placeholder="Enter your product price..."
-                    />
-                </div>
-                <br />
-                <div>
-                    <label className="pb-2">
-                        Price (With Discount) <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="number"
-                        name="price"
-                        value={discountPrice}
-                        className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        onChange={(e) => setDiscountPrice(e.target.value)}
-                        placeholder="Enter your product price with discount..."
-                    />
-                </div>
-                <br />
-                <div>
-                    <label className="pb-2">
-                        Product Stock <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="number"
-                        name="price"
-                        value={stock}
-                        className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        onChange={(e) => setStock(e.target.value)}
-                        placeholder="Enter your product stock..."
-                    />
-                </div>
-
-                <div>
-                    <label className="pb-2">
-                        Upload Images <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="file"
-                        name=""
-                        id="upload"
-                        className="hidden"
-                        multiple
-                        onChange={handleImageChange}
-                    />
-                    <div className="w-full flex items-center flex-wrap">
-                        <label htmlFor="upload">
-                            <AiOutlinePlusCircle size={30} className="mt-3" color="#555" />
-                        </label>
-                        {images &&
-                            images.map((i) => (
-                                <img
-                                    src={i}
-                                    key={i}
-                                    alt=""
-                                    className="h-[120px] w-[120px] object-cover m-2"
-                                />
-                            ))}
-                    </div>
-                    <br />
-                    <div>
-                        <input
-                            type="submit"
-                            value="Create"
-                            className="mt-2 cursor-pointer appearance-none text-center text-white block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-white focus:border-white  bg-[#051D40] sm:text-sm"
-                        />
-                    </div>
-                </div>
-            </form>
+  return (
+    <div className="w-[90%] 800px:w-[55%] bg-white shadow max-h-[82vh] rounded-[4px] p-6 overflow-y-scroll my-6">
+      <h5 className="text-[28px] font-Poppins text-center mb-4">Create Product / Package</h5>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="pb-1 block font-medium">
+            Listing Type <span className="text-red-500">*</span>
+          </label>
+          <select
+            className="w-full border h-[38px] rounded-[5px] px-2"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+          >
+            <option value="product">Solar Product</option>
+            <option value="package">Solar Package</option>
+          </select>
         </div>
-    );
+
+        <div>
+          <label className="pb-1 block font-medium">
+            Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            required
+            value={name}
+            className="block w-full px-3 h-[38px] border border-gray-300 rounded-[3px] sm:text-sm"
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter your product name..."
+          />
+        </div>
+
+        <div>
+          <label className="pb-1 block font-medium">
+            Description <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            required
+            rows="4"
+            value={description}
+            className="block w-full pt-2 px-3 border border-gray-300 rounded-[3px] sm:text-sm"
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Enter your product description..."
+          ></textarea>
+        </div>
+
+        <div>
+          <label className="pb-1 block font-medium">
+            Category <span className="text-red-500">*</span>
+          </label>
+          <select
+            className="w-full border h-[38px] rounded-[5px] px-2"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            required
+          >
+            <option value="">Choose a category</option>
+            {Array.from(new Set(productCategories)).map((cat) => (
+              <option value={cat} key={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {type === "package" && (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="pb-1 block font-medium">Capacity (e.g. 5 kW)</label>
+              <input
+                type="text"
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                className="block w-full px-3 h-[38px] border border-gray-300 rounded-[3px] sm:text-sm"
+                placeholder="5 kW"
+              />
+            </div>
+            <div>
+              <label className="pb-1 block font-medium">Warranty (e.g. 10 years)</label>
+              <input
+                type="text"
+                value={warranty}
+                onChange={(e) => setWarranty(e.target.value)}
+                className="block w-full px-3 h-[38px] border border-gray-300 rounded-[3px] sm:text-sm"
+                placeholder="10 years"
+              />
+            </div>
+          </div>
+        )}
+
+        <div>
+          <label className="pb-1 block font-medium">Tags</label>
+          <input
+            type="text"
+            value={tags}
+            className="block w-full px-3 h-[38px] border border-gray-300 rounded-[3px] sm:text-sm"
+            onChange={(e) => setTags(e.target.value)}
+            placeholder="solar, inverter, battery..."
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label className="pb-1 block font-medium">Original Price ($)</label>
+            <input
+              type="number"
+              step="0.01"
+              value={originalPrice}
+              className="block w-full px-3 h-[38px] border border-gray-300 rounded-[3px] sm:text-sm"
+              onChange={(e) => setOriginalPrice(e.target.value)}
+              placeholder="99.99"
+            />
+          </div>
+          <div>
+            <label className="pb-1 block font-medium">
+              Discount Price ($) <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              required
+              value={discountPrice}
+              className="block w-full px-3 h-[38px] border border-gray-300 rounded-[3px] sm:text-sm"
+              onChange={(e) => setDiscountPrice(e.target.value)}
+              placeholder="79.99"
+            />
+          </div>
+          <div>
+            <label className="pb-1 block font-medium">
+              Product Stock <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              required
+              min="0"
+              value={stock}
+              className="block w-full px-3 h-[38px] border border-gray-300 rounded-[3px] sm:text-sm"
+              onChange={(e) => setStock(e.target.value)}
+              placeholder="15"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="pb-1 block font-medium">Upload Images</label>
+          <input
+            type="file"
+            id="upload"
+            className="hidden"
+            multiple
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+          <div className="w-full flex items-center flex-wrap">
+            <label htmlFor="upload" className="cursor-pointer flex items-center gap-2 text-sm text-gray-600">
+              <AiOutlinePlusCircle size={30} color="#555" />
+              <span>Select up to 5 images</span>
+            </label>
+            <div className="w-full flex flex-wrap mt-2">
+              {images.map((img, idx) => (
+                <img
+                  src={img}
+                  key={idx}
+                  alt=""
+                  className="h-[90px] w-[90px] object-cover m-1 rounded border"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={submitting}
+          className="mt-4 cursor-pointer text-center text-white block w-full h-[40px] rounded-[4px] bg-[#051D40] hover:bg-[#0d336b] font-medium disabled:opacity-60"
+        >
+          {submitting ? "Creating..." : "Create"}
+        </button>
+      </form>
+    </div>
+  );
 };
 
 export default CreateProduct;
